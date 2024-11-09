@@ -24,7 +24,7 @@ keywords = [
     "pytorch", "torch",
     "tensorflow", "tf",
     "numpy", "np",
-    "jax", "flax".
+    "jax", "flax",
     "deep learning", "machine learning",
     "ml", "neural network",
 ]
@@ -32,6 +32,7 @@ keywords = [
 
 dependencies = [
     "safetensors",
+    "numpy",
 ]
 
 [project.optional-dependencies]
@@ -46,7 +47,7 @@ Homepage = "https://github.com/rachthree/safestructures"
 where = ["src"]
 
 [tool.isort]
-known_third_party = ["safetensors", "numpy", "sqlalchemy", "strawberry", "gql"]
+known_third_party = ["safetensors", "numpy"]
 known_first_party = ["safestructures"]
 profile = "black"
 default_section = "THIRDPARTY"
