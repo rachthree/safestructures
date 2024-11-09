@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "safestructures"
+version = "0.1.0"
+description = "Safetensors-based serialization of general data structures"
+authors = [
+    {name = "Craig Chan"}
+]
+maintainers = [
+    {name = "Craig Chan"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+keywords = [
+    "data structures",
+    "serialization",
+    "safetensors",
+    "tensors", 
+    "pytorch", "torch",
+    "tensorflow", "tf",
+    "numpy", "np",
+    "jax", "flax".
+    "deep learning", "machine learning",
+    "ml", "neural network",
+]
+
+
+dependencies = [
+    "safetensors",
+]
+
+[project.optional-dependencies]
+dev = ["pre-commit"]
+test = ["pytest"]
+
+
+[project.urls]
+Homepage = "https://github.com/rachthree/safestructures"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.isort]
+known_third_party = ["safetensors", "numpy", "sqlalchemy", "strawberry", "gql"]
+known_first_party = ["safestructures"]
+profile = "black"
+default_section = "THIRDPARTY"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+force_alphabetical_sort_within_sections = true
+
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310", "py311"]
+
+[tool.flake8]
+ignore = ["D104"]
+extend-ignore = ["E203"]
+max-line-length = 88
