@@ -38,7 +38,10 @@ class Serializer:
         Args:
             plugin (DataProcessor): The plugin processor.
         """
-        error_msg = f"{plugin} must be a DataProcessor"
+        error_msg = (
+            f"{plugin} must be a safestructures.DataProcessor"
+            " or safestructures.TensorProcessor"
+        )
         assert isinstance(plugin, DataProcessor), error_msg
 
         if plugin.data_type in self.process_map:
