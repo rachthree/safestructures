@@ -12,15 +12,6 @@ BASIC_TYPES = (str, numbers.Number, type(None), bool)
 class BasicProcessor(DataProcessor):
     """Processor for basic datatypes."""
 
-    @classmethod
-    def verify(cls):
-        """Overload `DataProcessor.verify`.
-
-        This is a special case as this is the only
-        `DataProcessor` that is allowed for `Any` type.
-        """
-        return
-
     def serialize(self, value: Union[str, numbers.Number, None, bool]):
         """Overload `DataProcessor.serialize`.
 

@@ -62,7 +62,7 @@ class Serializer:
         """
         data_type = type(data)
         try:
-            return self.process_map[data_type].serialize(data)
+            return self.process_map[data_type](self).serialize(data)
         except KeyError:
             raise TypeError(
                 f"Processor for type {data_type} not found."
