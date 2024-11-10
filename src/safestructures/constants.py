@@ -7,6 +7,8 @@ from safestructures.processors.iterable import (
     SetProcessor,
     TupleProcessor,
 )
+from safestructures.processors.tensor import NumpyProcessor
+from safestructures.utils.module import is_available
 
 TYPE_FIELD = "type"
 VALUE_FIELD = "value"
@@ -23,3 +25,9 @@ ITERABLE_PROCESS_MAP = {
     DataclassProcessor.data_type: DataclassProcessor,
 }
 DEFAULT_PROCESS_MAP = {**BASIC_PROCESS_MAP, **ITERABLE_PROCESS_MAP}
+DEFAULT_PROCESS_MAP[NumpyProcessor.data_type] = NumpyProcessor
+
+if is_available("torch"):
+    from safestructures.processors.tensor import TorchProcessor
+
+    DEFAULT_PROCESS_MAP[TorchProcessor.data_type] = TorchProcessor

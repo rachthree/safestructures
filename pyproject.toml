@@ -20,7 +20,7 @@ keywords = [
     "data structures",
     "serialization",
     "safetensors",
-    "tensors", 
+    "tensors",
     "pytorch", "torch",
     "tensorflow", "tf",
     "numpy", "np",
@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pre-commit"]
-test = ["pytest"]
+test = ["pytest", "torch", "tensorflow", "flax", "paddlepaddle"]
 
 
 [project.urls]

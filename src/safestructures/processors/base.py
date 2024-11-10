@@ -27,12 +27,6 @@ class DataProcessor(ABC):
         """
         self.serializer = serializer
 
-    @classmethod
-    def verify(cls):
-        """Verify the plugin is valid."""
-        if cls.data_type is Any:
-            raise TypeError(f"{cls.__name__}.data_type cannot be Any")
-
     @abstractmethod
     def serialize(self, data: Any) -> dict:
         """Serialize the data.

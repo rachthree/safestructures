@@ -26,21 +26,27 @@ class Serializer:
         """Initialize the serializer."""
         self.tensors = {}
 
-        process_map: dict[type, DataProcessor] = deepcopy(DEFAULT_PROCESS_MAP)
+        self.process_map: dict[type, DataProcessor] = deepcopy(DEFAULT_PROCESS_MAP)
         if plugins:
             for p in plugins:
-                assert isinstance(
-                    p, DataProcessor
-                ), f"{type(p)} must be a DataProcessor"
-                p.verify()
-                data_type = p.data_type
-                if data_type in process_map:
-                    raise ValueError(
-                        f"Processor for {data_type} already exists."
-                        " Processors must be unique."
-                    )
-                process_map[data_type] = p
-        self.process_map = process_map
+                self._check_plugin(p)
+                self.process_map[p.data_type] = p
+
+    def _check_plugin(self, plugin: DataProcessor):
+        """Verify the external plugin.
+
+        Args:
+            plugin (DataProcessor): The plugin processor.
+        """
+        error_msg = f"{plugin} must be a DataProcessor"
+        assert isinstance(plugin, DataProcessor), error_msg
+
+        if plugin.data_type in self.process_map:
+            error_msg = (
+                f"Processor for {plugin.data_type} already exists."
+                "Processors must be unique."
+            )
+            raise ValueError(error_msg)
 
     def serialize(self, data: Any) -> dict:
         """Serialize the data so that it can be stored in a safetensors file.
