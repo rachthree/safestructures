@@ -50,7 +50,7 @@ class DictProcessor(DataProcessor):
 @runtime_checkable
 @dataclasses.dataclass
 class Dataclass(Protocol):
-    """Protocol to help provide a "dataclass" type."""
+    """Protocol to help provide a 'dataclass' type."""
 
     pass
 

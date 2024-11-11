@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pydoc import locate
-from typing import Any, TYPE_CHECKING, Union
+from typing import Any, Type, TYPE_CHECKING, Union
 
 import numpy as np
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class DataProcessor(ABC):
     """Base class for data processors other than tensors."""
 
-    data_type: Any
+    data_type: Type[Any]
 
     def __init__(self, serializer: Serializer):
         """Initialize the DataProcessor.

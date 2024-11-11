@@ -63,7 +63,7 @@ class TestBasicProcessor:
 
     @pytest.mark.parametrize("test_input", [True, False])
     def test_deserialize_bool(self, serializer, test_input):
-        """Test deserialization to bollean."""
+        """Test deserialization to boolean."""
         expected_value = test_input
         test_schema = generate_schema("bool", test_input)
         result = BasicProcessor(serializer).deserialize(test_schema)
