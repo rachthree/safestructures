@@ -10,12 +10,12 @@ from safetensors import safe_open
 from safetensors.numpy import save_file
 
 from safestructures.constants import (
-    DEFAULT_PROCESS_MAP,
     SCHEMA_FIELD,
     SCHEMA_VERSION,
     TYPE_FIELD,
     VERSION_FIELD,
 )
+from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
 
 

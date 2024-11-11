@@ -20,7 +20,7 @@ class BasicProcessor(DataProcessor):
         required by safetensors.
         """
         value_type = type(value).__name__
-        if value is not None and not isinstance(value_type, bool):
+        if value is not None and not isinstance(value, bool):
             value = str(value)
 
         return {TYPE_FIELD: value_type, VALUE_FIELD: value}

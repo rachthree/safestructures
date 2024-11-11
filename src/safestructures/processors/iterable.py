@@ -10,19 +10,19 @@ from safestructures.processors.base import DataProcessor, ListBaseProcessor
 class ListProcessor(ListBaseProcessor):
     """Processor for list data."""
 
-    data_type: list
+    data_type = list
 
 
 class SetProcessor(ListBaseProcessor):
     """Processor for set data."""
 
-    data_type: set
+    data_type = set
 
 
 class TupleProcessor(ListBaseProcessor):
     """Processor for tuple data."""
 
-    data_type: tuple
+    data_type = tuple
 
 
 class DictProcessor(DataProcessor):
@@ -57,6 +57,8 @@ class Dataclass(Protocol):
 
 class DataclassProcessor(DataProcessor):
     """Processor for dataclass data."""
+
+    data_type = Dataclass
 
     def serialize(self, data: Any):
         """Overload `DataProcessor.serialize`."""

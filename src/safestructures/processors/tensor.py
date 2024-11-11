@@ -9,7 +9,7 @@ from safestructures.utils.module import is_available
 class NumpyProcessor(TensorProcessor):
     """Numpy array processor."""
 
-    data_type: np.ndarray
+    data_type = np.ndarray
 
     def to_cpu(self, tensor: np.ndarray) -> np.ndarray:
         """Passthrough since this is already a Numpy array."""
@@ -26,7 +26,7 @@ if is_available("torch"):
     class TorchProcessor(TensorProcessor):
         """Pytorch tensor processor."""
 
-        data_type: torch.Tensor
+        data_type = torch.Tensor
 
         def to_cpu(self, tensor: torch.Tensor) -> np.ndarray:
             """Overload `TensorProcessor.to_cpu`."""
