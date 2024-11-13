@@ -61,7 +61,7 @@ class ListBaseProcessor(DataProcessor):
         """Overload `DataProcessor.serialize`."""
         data_list = []
         for d in data:
-            data_list.append(self.serialize(d))
+            data_list.append(self.serializer.serialize(d))
 
         return {TYPE_FIELD: self.data_type.__name__, VALUE_FIELD: data_list}
 

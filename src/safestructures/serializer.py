@@ -1,5 +1,6 @@
 """Main serialization utility."""
 import json
+import numbers
 from copy import deepcopy
 from pathlib import Path, PosixPath
 from pydoc import locate
@@ -61,6 +62,9 @@ class Serializer:
             dict: The schema showing the datatypes and serialized values.
         """
         data_type = type(data)
+        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
+            data_type = numbers.Number
+
         try:
             return self.process_map[data_type](self).serialize(data)
         except KeyError:
@@ -79,6 +83,9 @@ class Serializer:
             Any: The reconstructed data.
         """
         data_type = locate(schema[TYPE_FIELD])
+        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
+            data_type = numbers.Number
+
         try:
             return self.process_map[data_type].deserialize(schema)
         except KeyError:
