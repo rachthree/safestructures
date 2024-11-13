@@ -5,6 +5,7 @@ import pytest
 
 from safestructures.constants import TYPE_FIELD, VALUE_FIELD
 from safestructures.processors.iterable import (  # DataclassProcessor,; DictProcessor,
+    DictProcessor,
     ListProcessor,
     SetProcessor,
     TupleProcessor,
@@ -32,6 +33,7 @@ def _serialize_listlike_test(mock_serializer, iterable_type, any_order=False):
     result = cls_map[iterable_type](mock_serializer).serialize(test_input)
 
     assert result[TYPE_FIELD] == iterable_type.__name__
+    assert isinstance(result[VALUE_FIELD], list)
     assert len(result[VALUE_FIELD]) == len(test_input)
     mock_serializer.serialize.assert_has_calls(mock_calls, any_order=any_order)
     mock_serializer.deserialize.assert_not_called()
@@ -90,3 +92,58 @@ def test_serialize_listlike(mock_serializer, iterable_type, any_order):
 def test_deserialize_listlike(mock_serializer, iterable_type):
     """Test deserialization to list."""
     _deserialize_listlike_test(mock_serializer, list)
+
+
+def test_serialize_dict(mock_serializer):
+    """Test dict serialization to schema."""
+    test_input = {"name": "anakin", "midichlorian_count": 27000, "chosen_one": True}
+
+    mock_calls = [mock.call(v) for v in test_input.values()]
+    result = DictProcessor(mock_serializer).serialize(test_input)
+
+    assert result[TYPE_FIELD] == "dict"
+    assert isinstance(result[VALUE_FIELD], dict)
+    assert len(result[VALUE_FIELD]) == len(test_input)
+    for k in test_input:
+        try:
+            result[VALUE_FIELD][k]
+        except KeyError:
+            raise KeyError(f"Key {k} not found in result's value field section.")
+
+    mock_serializer.serialize.assert_has_calls(mock_calls, any_order=True)
+    mock_serializer.deserialize.assert_not_called()
+
+
+def test_deserialize_dict(mock_serializer):
+    """Test deserialization to dict."""
+    test_schema = {
+        TYPE_FIELD: "dict",
+        VALUE_FIELD: {
+            "name": {
+                TYPE_FIELD: "str",
+                VALUE_FIELD: "anakin",
+            },
+            "midichlorian_count": {
+                TYPE_FIELD: "int",
+                VALUE_FIELD: "27000",
+            },
+            "chosen_one": {
+                TYPE_FIELD: "bool",
+                VALUE_FIELD: True,
+            },
+        },
+    }
+
+    mock_calls = [mock.call(v) for v in test_schema[VALUE_FIELD].values()]
+    result = DictProcessor(mock_serializer).deserialize(test_schema)
+
+    assert isinstance(result, dict)
+    assert len(result) == len(test_schema[VALUE_FIELD])
+    for k in test_schema[VALUE_FIELD]:
+        try:
+            result[k]
+        except KeyError:
+            raise KeyError(f"Key {k} not found in result's value field section.")
+
+    mock_serializer.serialize.assert_not_called()
+    mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=False)
