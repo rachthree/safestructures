@@ -1,10 +1,12 @@
 """Tests for the iterable datatype processors."""
+from dataclasses import dataclass, fields, is_dataclass
 from unittest import mock
 
 import pytest
 
 from safestructures.constants import TYPE_FIELD, VALUE_FIELD
-from safestructures.processors.iterable import (  # DataclassProcessor,; DictProcessor,
+from safestructures.processors.iterable import (
+    DataclassProcessor,
     DictProcessor,
     ListProcessor,
     SetProcessor,
@@ -143,7 +145,76 @@ def test_deserialize_dict(mock_serializer):
         try:
             result[k]
         except KeyError:
-            raise KeyError(f"Key {k} not found in result's value field section.")
+            raise KeyError(f"Key {k} not found in deserialized result.")
+
+    mock_serializer.serialize.assert_not_called()
+    mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=False)
+
+
+def test_serialize_dataclass(mock_serializer):
+    """Test dataclass serialization to schema."""
+
+    @dataclass
+    class TestDC:
+        name: str
+        midichlorian_count: int
+        chosen_one: bool
+
+    test_input = TestDC(name="anakin", midichlorian_count=27000, chosen_one=True)
+    fields = [
+        "name",
+        "midichlorian_count",
+        "chosen_one",
+    ]  # being explicit here instead of using dataclasses.fields
+    mock_calls = [mock.call(getattr(test_input, f)) for f in fields]
+    result = DataclassProcessor(mock_serializer).serialize(test_input)
+
+    assert result[TYPE_FIELD] == "Dataclass"
+    assert isinstance(result[VALUE_FIELD], dict)
+    assert len(result[VALUE_FIELD]) == len(fields)
+    for f in fields:
+        try:
+            result[VALUE_FIELD][f]
+        except KeyError:
+            raise KeyError(
+                f"Key {f} representing a dataclass field"
+                " not found in result's value field section."
+            )
+
+    mock_serializer.serialize.assert_has_calls(mock_calls, any_order=True)
+    mock_serializer.deserialize.assert_not_called()
+
+
+def test_deserialize_dataclass(mock_serializer):
+    """Test deserialization to a dataclass."""
+    test_schema = {
+        TYPE_FIELD: "Dataclass",
+        VALUE_FIELD: {
+            "name": {
+                TYPE_FIELD: "str",
+                VALUE_FIELD: "anakin",
+            },
+            "midichlorian_count": {
+                TYPE_FIELD: "int",
+                VALUE_FIELD: "27000",
+            },
+            "chosen_one": {
+                TYPE_FIELD: "bool",
+                VALUE_FIELD: True,
+            },
+        },
+    }
+
+    mock_calls = [mock.call(v) for v in test_schema[VALUE_FIELD].values()]
+    result = DataclassProcessor(mock_serializer).deserialize(test_schema)
+
+    assert is_dataclass(result)
+    assert len(fields(result)) == len(test_schema[VALUE_FIELD])
+    for f in test_schema[VALUE_FIELD]:
+        try:
+            getattr(result, f)
+        except AttributeError:
+            raise AttributeError(f"Field {f} not found in deserialized result.")
 
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=False)
