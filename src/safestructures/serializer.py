@@ -28,10 +28,12 @@ class Serializer:
         self.tensors = {}
 
         self.process_map: dict[type, DataProcessor] = deepcopy(DEFAULT_PROCESS_MAP)
+        self.data_type_map: dict[str, type] = {}
         if plugins:
             for p in plugins:
                 self._check_plugin(p)
-                self.process_map[p.data_type] = p
+                self.process_map[str(p.data_type)] = p
+                self.data_type_map[str(p.data_type)] = p.data_type
 
     def _check_plugin(self, plugin: DataProcessor):
         """Verify the external plugin.
@@ -82,12 +84,16 @@ class Serializer:
         Returns:
             Any: The reconstructed data.
         """
-        data_type = locate(schema[TYPE_FIELD])
-        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
+        data_type_str = schema[TYPE_FIELD]
+
+        data_type = locate(data_type_str)
+        if data_type_str not in self.process_map and issubclass(
+            data_type, numbers.Number
+        ):
             data_type = numbers.Number
 
         try:
-            return self.process_map[data_type].deserialize(schema)
+            return self.process_map[data_type](self).deserialize(schema)
         except KeyError:
             raise TypeError(
                 f"Processor for type {data_type} not found."

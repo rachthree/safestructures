@@ -3,7 +3,7 @@
 import dataclasses
 from typing import Any, Protocol, runtime_checkable
 
-from safestructures.constants import TYPE_FIELD, VALUE_FIELD
+from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
 from safestructures.processors.base import DataProcessor, ListBaseProcessor
 
 
@@ -32,9 +32,12 @@ class DictProcessor(DataProcessor):
 
     def serialize(self, data: Any):
         """Overload `DataProcessor.serialize`."""
-        schema = {TYPE_FIELD: self.data_type.__name__, VALUE_FIELD: {}}
+        schema = {TYPE_FIELD: self.data_type.__name__, VALUE_FIELD: {}, KEYS_FIELD: {}}
+        # Keys can be numerical or tuple, not just strings.
         for k, v in data.items():
-            schema[VALUE_FIELD][k] = self.serializer.serialize(v)
+            key = str(k)
+            schema[KEYS_FIELD][key] = self.serializer.serialize(k)
+            schema[VALUE_FIELD][key] = self.serializer.serialize(v)
 
         return schema
 
@@ -42,7 +45,9 @@ class DictProcessor(DataProcessor):
         """Overload `DataProcessor.deserialize`."""
         results = {}
         for k, v in schema[VALUE_FIELD].items():
-            results[k] = self.serializer.deserialize(v)
+            key = self.serializer.deserialize(schema[KEYS_FIELD][k])
+            results[key] = self.serializer.deserialize(v)
+            print(results)
 
         return results
 

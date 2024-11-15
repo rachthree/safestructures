@@ -11,18 +11,21 @@ from safestructures.processors.iterable import (
 from safestructures.processors.tensor import NumpyProcessor
 from safestructures.utils.module import is_available
 
-BASIC_PROCESS_MAP = {t: BasicProcessor for t in BASIC_TYPES}
+BASIC_PROCESS_MAP = {str(t): BasicProcessor for t in BASIC_TYPES}
+iterable_cls_list = [
+    ListProcessor,
+    SetProcessor,
+    TupleProcessor,
+    DictProcessor,
+    DataclassProcessor,
+]
 ITERABLE_PROCESS_MAP = {
-    ListProcessor.data_type: ListProcessor,
-    SetProcessor.data_type: SetProcessor,
-    TupleProcessor.data_type: TupleProcessor,
-    DictProcessor.data_type: DictProcessor,
-    DataclassProcessor.data_type: DataclassProcessor,
+    str(processor.data_type): processor for processor in iterable_cls_list
 }
 DEFAULT_PROCESS_MAP = {**BASIC_PROCESS_MAP, **ITERABLE_PROCESS_MAP}
-DEFAULT_PROCESS_MAP[NumpyProcessor.data_type] = NumpyProcessor
+DEFAULT_PROCESS_MAP[str(NumpyProcessor.data_type)] = NumpyProcessor
 
 if is_available("torch"):
     from safestructures.processors.tensor import TorchProcessor
 
-    DEFAULT_PROCESS_MAP[TorchProcessor.data_type] = TorchProcessor
+    DEFAULT_PROCESS_MAP[str(TorchProcessor.data_type)] = TorchProcessor

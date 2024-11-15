@@ -1,10 +1,12 @@
 """Tests for the iterable datatype processors."""
+import ast
 from dataclasses import dataclass, fields, is_dataclass
 from unittest import mock
 
 import pytest
 
-from safestructures.constants import TYPE_FIELD, VALUE_FIELD
+from safestructures import Serializer
+from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
 from safestructures.processors.iterable import (
     DataclassProcessor,
     DictProcessor,
@@ -17,7 +19,9 @@ from safestructures.processors.iterable import (
 @pytest.fixture
 def mock_serializer():
     """Provide mocked Serializer fixture."""
-    return mock.MagicMock()
+    mock_serializer = mock.MagicMock()
+    mock_serializer.deserialize = mock.MagicMock(wraps=Serializer().deserialize)
+    return mock_serializer
 
 
 def _serialize_listlike_test(mock_serializer, iterable_type, any_order=False):
@@ -98,7 +102,12 @@ def test_deserialize_listlike(mock_serializer, iterable_type):
 
 def test_serialize_dict(mock_serializer):
     """Test dict serialization to schema."""
-    test_input = {"name": "anakin", "midichlorian_count": 27000, "chosen_one": True}
+    test_input = {
+        "name": "anakin",
+        "midichlorian_count": 27000,
+        "chosen_one": True,
+        (1, 2): 3,
+    }
 
     mock_calls = [mock.call(v) for v in test_input.values()]
     result = DictProcessor(mock_serializer).serialize(test_input)
@@ -106,9 +115,10 @@ def test_serialize_dict(mock_serializer):
     assert result[TYPE_FIELD] == "dict"
     assert isinstance(result[VALUE_FIELD], dict)
     assert len(result[VALUE_FIELD]) == len(test_input)
+    assert len(result[KEYS_FIELD]) == len(test_input)
     for k in test_input:
         try:
-            result[VALUE_FIELD][k]
+            result[VALUE_FIELD][str(k)]
         except KeyError:
             raise KeyError(f"Key {k} not found in result's value field section.")
 
@@ -133,22 +143,51 @@ def test_deserialize_dict(mock_serializer):
                 TYPE_FIELD: "bool",
                 VALUE_FIELD: True,
             },
+            "(1, 2)": {
+                TYPE_FIELD: "int",
+                VALUE_FIELD: "3",
+            },
+        },
+        KEYS_FIELD: {
+            "name": {
+                TYPE_FIELD: "str",
+                VALUE_FIELD: "name",
+            },
+            "midichlorian_count": {
+                TYPE_FIELD: "str",
+                VALUE_FIELD: "midichlorian_count",
+            },
+            "chosen_one": {
+                TYPE_FIELD: "str",
+                VALUE_FIELD: "chosen_one",
+            },
+            "(1, 2)": {
+                TYPE_FIELD: "tuple",
+                VALUE_FIELD: [
+                    {TYPE_FIELD: "int", VALUE_FIELD: "1"},
+                    {TYPE_FIELD: "int", VALUE_FIELD: "2"},
+                ],
+            },
         },
     }
 
     mock_calls = [mock.call(v) for v in test_schema[VALUE_FIELD].values()]
+    for v in test_schema[KEYS_FIELD].values():
+        mock_calls.append(mock.call(v))
     result = DictProcessor(mock_serializer).deserialize(test_schema)
 
     assert isinstance(result, dict)
     assert len(result) == len(test_schema[VALUE_FIELD])
     for k in test_schema[VALUE_FIELD]:
         try:
+            if test_schema[KEYS_FIELD][k][TYPE_FIELD] == "tuple":
+                k = ast.literal_eval(k)
             result[k]
         except KeyError:
             raise KeyError(f"Key {k} not found in deserialized result.")
 
     mock_serializer.serialize.assert_not_called()
-    mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=False)
+    mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=True)
 
 
 def test_serialize_dataclass(mock_serializer):
@@ -218,3 +257,49 @@ def test_deserialize_dataclass(mock_serializer):
 
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_has_calls(mock_calls, any_order=False)
+
+
+def test_nested_structure():
+    """Integration test for a nested structure without tensors."""
+
+    @dataclass
+    class TestDC:
+        name: str
+        midichlorian_count: int
+        chosen_one: bool
+
+    test_input = [
+        (42, "answer to everything", {"origin": "Deep Thought"}),
+        {
+            "name": "obi-wan",
+            "midichlorian_count": 13000,
+            "allies": ["anakin", "ahsoka"],
+        },
+        TestDC(name="anakin", midichlorian_count=27000, chosen_one=True),
+        set(8, "red", 13, "black"),
+        [
+            complex(1.618, 3.14),
+            -123.56789101112,
+            "abc123",
+            (
+                "shii-CHO",
+                "makashi",
+                "SORESU",
+                "ataru",
+                ("Shien", "Djem So"),
+                "Niman",
+                ("Juyo", "Vaapad"),
+            ),
+        ],
+        {
+            "grandmaster": TestDC(
+                name="yoda", midichlorian_count=18000, chosen_one=False
+            ),
+            "form": 4,
+            66: "survived",
+        },
+    ]
+
+    Serializer().serialize(test_input)
+
+    # Deserialization
