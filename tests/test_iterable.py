@@ -300,6 +300,8 @@ def test_nested_structure():
         },
     ]
 
+    # Serialization
+
     Serializer().serialize(test_input)
 
     # Deserialization
