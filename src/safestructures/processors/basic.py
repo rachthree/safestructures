@@ -3,7 +3,7 @@ import numbers
 from pydoc import locate
 from typing import Union
 
-from safestructures.constants import TYPE_FIELD, VALUE_FIELD
+from safestructures.constants import TYPE_FIELD
 from safestructures.processors.base import DataProcessor
 
 BASIC_TYPES = (str, numbers.Number, type(None), bool)
@@ -12,23 +12,26 @@ BASIC_TYPES = (str, numbers.Number, type(None), bool)
 class BasicProcessor(DataProcessor):
     """Processor for basic datatypes."""
 
-    def serialize(self, value: Union[str, numbers.Number, None, bool]):
+    def serialize(
+        self, value: Union[str, numbers.Number, None, bool]
+    ) -> Union[str, None, bool]:
         """Overload `DataProcessor.serialize`.
 
         For simple data types other than None and boolean, this
         casts to a string to be stored in the metadata, as is
         required by safetensors.
         """
-        value_type = type(value).__name__
         if value is not None and not isinstance(value, bool):
             value = str(value)
 
-        return {TYPE_FIELD: value_type, VALUE_FIELD: value}
+        return value
 
-    def deserialize(self, schema: dict):
+    def deserialize(
+        self, serialized: Union[str, None, bool], **kwargs
+    ) -> Union[str, numbers.Number, None, bool]:
         """Overload `DataProcessor.deserialize`."""
-        if schema[VALUE_FIELD] is None:
+        if serialized is None:
             return None
 
-        t = locate(schema[TYPE_FIELD])
-        return t(schema[VALUE_FIELD])
+        t = locate(kwargs[TYPE_FIELD])
+        return t(serialized)

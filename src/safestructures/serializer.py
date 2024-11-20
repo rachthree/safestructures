@@ -1,16 +1,20 @@
 """Main serialization utility."""
+import builtins
+import importlib
 import json
 import numbers
+import types
 from copy import deepcopy
+from dataclasses import is_dataclass
 from pathlib import Path, PosixPath
-from pydoc import locate
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
 
 import numpy as np
 from safetensors import safe_open
 from safetensors.numpy import save_file
 
 from safestructures.constants import (
+    Mode,
     SCHEMA_FIELD,
     SCHEMA_VERSION,
     TYPE_FIELD,
@@ -18,6 +22,8 @@ from safestructures.constants import (
 )
 from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
+from safestructures.processors.iterable import Dataclass
+from safestructures.utils.module import get_import_path
 
 
 class Serializer:
@@ -28,12 +34,38 @@ class Serializer:
         self.tensors = {}
 
         self.process_map: dict[type, DataProcessor] = deepcopy(DEFAULT_PROCESS_MAP)
-        self.data_type_map: dict[str, type] = {}
+
         if plugins:
             for p in plugins:
                 self._check_plugin(p)
                 self.process_map[str(p.data_type)] = p
                 self.data_type_map[str(p.data_type)] = p.data_type
+
+        self.data_type_map: dict[str, DataProcessor] = {
+            get_import_path(d.data_type): d for d in self.process_map.values()
+        }
+        self.mode: Optional[Mode] = None
+
+    @staticmethod
+    def _get_data_type(type_str: str) -> Type:
+        # Handle "None" or "NoneType"
+        if type_str in {"None", "NoneType"}:
+            return types.NoneType
+
+        if type_str == "Dataclass":
+            return Dataclass
+
+        # Check if the type is a built-in (e.g., "int", "str", "list")
+        if hasattr(builtins, type_str):
+            return getattr(builtins, type_str)
+
+        # Otherwise, assume it is a fully qualified name (e.g., "a.b.c.some_type")
+        try:
+            module_name, class_name = type_str.rsplit(".", 1)
+            module = importlib.import_module(module_name)
+            return getattr(module, class_name)
+        except (ValueError, ImportError, AttributeError) as e:
+            raise ImportError(f"Cannot import type: {type_str}") from e
 
     def _check_plugin(self, plugin: DataProcessor):
         """Verify the external plugin.
@@ -64,11 +96,14 @@ class Serializer:
             dict: The schema showing the datatypes and serialized values.
         """
         data_type = type(data)
-        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
-            data_type = numbers.Number
+        if data_type not in self.process_map:
+            if issubclass(data_type, numbers.Number):
+                data_type = numbers.Number
+            elif is_dataclass(data):
+                data_type = Dataclass
 
         try:
-            return self.process_map[data_type](self).serialize(data)
+            return self.process_map[data_type](self)(data)
         except KeyError:
             raise TypeError(
                 f"Processor for type {data_type} not found."
@@ -86,14 +121,12 @@ class Serializer:
         """
         data_type_str = schema[TYPE_FIELD]
 
-        data_type = locate(data_type_str)
-        if data_type_str not in self.process_map and issubclass(
-            data_type, numbers.Number
-        ):
+        data_type = self._get_data_type(data_type_str)
+        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
             data_type = numbers.Number
 
         try:
-            return self.process_map[data_type](self).deserialize(schema)
+            return self.process_map[data_type](self)(schema)
         except KeyError:
             raise TypeError(
                 f"Processor for type {data_type} not found."
@@ -116,6 +149,7 @@ class Serializer:
         """
         save_path = Path(save_path).expanduser().resolve()
         self.tensors.clear()
+        self.mode = Mode.SAVE
         schema = self.serialize(data)
         if not metadata:
             metadata = {}
@@ -152,6 +186,7 @@ class Serializer:
         """
         load_path = Path(load_path).expanduser().resolve()
         self.tensors.clear()
+        self.mode = Mode.LOAD
         with safe_open(load_path, framework=framework, device=device) as f:
             tensors = {}
             for k in f.keys():

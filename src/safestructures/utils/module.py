@@ -1,6 +1,7 @@
 """Import utilities."""
 import importlib
 from types import ModuleType
+from typing import Type
 
 
 def load_module(module_name: str) -> ModuleType:
@@ -25,3 +26,12 @@ def is_available(module_name: str) -> bool:
         bool: True if available, False if not.
     """
     return importlib.util.find_spec(module_name)
+
+
+def get_import_path(data_type: Type):
+    """Provide the full Python import path for a data type (class)."""
+    module = data_type.__module__
+    name = data_type.__qualname__
+    if module == "builtins":
+        return name  # No need to import built-in types
+    return f"{module}.{name}"

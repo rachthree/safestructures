@@ -1,9 +1,9 @@
 """Plugins to process iterables, including dataclasses."""
 
 import dataclasses
-from typing import Any, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
+from safestructures.constants import KEYS_FIELD
 from safestructures.processors.base import DataProcessor, ListBaseProcessor
 
 
@@ -30,24 +30,36 @@ class DictProcessor(DataProcessor):
 
     data_type = dict
 
-    def serialize(self, data: Any):
+    def serialize(self, data: dict) -> dict:
         """Overload `DataProcessor.serialize`."""
-        schema = {TYPE_FIELD: self.data_type.__name__, VALUE_FIELD: {}, KEYS_FIELD: {}}
-        # Keys can be numerical or tuple, not just strings.
+        results = {}
         for k, v in data.items():
             key = str(k)
-            schema[KEYS_FIELD][key] = self.serializer.serialize(k)
-            schema[VALUE_FIELD][key] = self.serializer.serialize(v)
+            results[key] = self.serializer.serialize(v)
 
+        return results
+
+    def serialize_extra(self, data: dict) -> dict:
+        """Overload `DataProcessor.serialize_extra`.
+
+        The additional schema to provide helps serialize
+        the dictionary keys themselves.
+        """
+        # Keys can be numerical or tuple, not just strings.
+        schema = {KEYS_FIELD: {}}
+        for k in data:
+            key = str(k)
+            schema[KEYS_FIELD][key] = self.serializer.serialize(k)
         return schema
 
-    def deserialize(self, schema: dict) -> dict:
+    def deserialize(self, serialized: dict, **kwargs) -> dict:
         """Overload `DataProcessor.deserialize`."""
         results = {}
-        for k, v in schema[VALUE_FIELD].items():
-            key = self.serializer.deserialize(schema[KEYS_FIELD][k])
+        key_schemas = kwargs[KEYS_FIELD]
+        for k, v in serialized.items():
+            key_schema = key_schemas[k]
+            key = self.serializer.deserialize(key_schema)
             results[key] = self.serializer.deserialize(v)
-            print(results)
 
         return results
 
@@ -65,22 +77,30 @@ class DataclassProcessor(DataProcessor):
 
     data_type = Dataclass
 
-    def serialize(self, data: Any):
+    @property
+    def schema_type(self):
+        """Overload `DataProcessor.schema_type`.
+
+        Provide a consistent schema type for all dataclasses.
+        """
+        return self.data_type.__name__
+
+    def serialize(self, data: Dataclass) -> dict:
         """Overload `DataProcessor.serialize`."""
         fields = dataclasses.fields(data)
-        schema = {TYPE_FIELD: self.data_type.__name__, VALUE_FIELD: {}}
+        results = {}
         for f in fields:
             name = f.name
-            schema[VALUE_FIELD][name] = self.serializer.serialize(getattr(data, name))
+            results[name] = self.serializer.serialize(getattr(data, name))
 
-        return schema
+        return results
 
-    def deserialize(self, schema: dict):
+    def deserialize(self, serialized: dict, **kwargs) -> Dataclass:
         """Overload `DataProcessor.deserialize`."""
-        fields = list(schema[VALUE_FIELD].keys())
+        fields = list(serialized.keys())
         cls = dataclasses.make_dataclass("Dataclass", fields)
-        kwargs = {}
-        for k, v in schema[VALUE_FIELD].items():
-            kwargs[k] = self.serializer.deserialize(v)
+        dc_kwargs = {}
+        for k, v in serialized.items():
+            dc_kwargs[k] = self.serializer.deserialize(v)
 
-        return cls(**kwargs)
+        return cls(**dc_kwargs)

@@ -2,8 +2,8 @@
 from unittest import mock
 
 import pytest
-from utils import check_schema, generate_schema
 
+from safestructures.constants import TYPE_FIELD
 from safestructures.processors.basic import BasicProcessor
 
 numeric_test_cases = [
@@ -27,7 +27,7 @@ def test_serialize_str(mock_serializer):
     expected_value = test_input
     result = BasicProcessor(mock_serializer).serialize(test_input)
 
-    check_schema(result, "str", expected_value)
+    assert result == expected_value
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_not_called()
 
@@ -35,8 +35,8 @@ def test_serialize_str(mock_serializer):
 def test_deserialize_str(mock_serializer):
     """Test deserialization to string."""
     test_value = "mock_input"
-    test_schema = generate_schema("str", test_value)
-    result = BasicProcessor(mock_serializer).deserialize(test_schema)
+    kwargs = {TYPE_FIELD: "str"}
+    result = BasicProcessor(mock_serializer).deserialize(test_value, **kwargs)
 
     assert result == test_value
     mock_serializer.serialize.assert_not_called()
@@ -49,17 +49,17 @@ def test_serialize_numeric(mock_serializer, test_input, expected_type):
     expected_value = str(test_input)
     result = BasicProcessor(mock_serializer).serialize(test_input)
 
-    check_schema(result, expected_type, expected_value)
+    assert result == expected_value
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_not_called()
 
 
-@pytest.mark.parametrize("expected_value,schema_type", numeric_test_cases)
-def test_deserialize_numeric(mock_serializer, expected_value, schema_type):
+@pytest.mark.parametrize("test_input,schema_type", numeric_test_cases)
+def test_deserialize_numeric(mock_serializer, test_input, schema_type):
     """Test deserialization to numeric."""
-    schema_input = str(expected_value)
-    test_schema = generate_schema(schema_type, schema_input)
-    result = BasicProcessor(mock_serializer).deserialize(test_schema)
+    expected_value = test_input
+    kwargs = {TYPE_FIELD: schema_type}
+    result = BasicProcessor(mock_serializer).deserialize(test_input, **kwargs)
 
     assert result == expected_value
     mock_serializer.serialize.assert_not_called()
@@ -72,7 +72,7 @@ def test_serialize_bool(mock_serializer, test_input):
     expected_value = test_input
     result = BasicProcessor(mock_serializer).serialize(test_input)
 
-    check_schema(result, "bool", expected_value)
+    assert result == expected_value
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_not_called()
 
@@ -81,8 +81,8 @@ def test_serialize_bool(mock_serializer, test_input):
 def test_deserialize_bool(mock_serializer, test_input):
     """Test deserialization to boolean."""
     expected_value = test_input
-    test_schema = generate_schema("bool", test_input)
-    result = BasicProcessor(mock_serializer).deserialize(test_schema)
+    kwargs = {TYPE_FIELD: "bool"}
+    result = BasicProcessor(mock_serializer).deserialize(test_input, **kwargs)
 
     assert result == expected_value
     mock_serializer.serialize.assert_not_called()
@@ -95,7 +95,7 @@ def test_serialize_null(mock_serializer):
     expected_value = test_input
     result = BasicProcessor(mock_serializer).serialize(test_input)
 
-    check_schema(result, "NoneType", expected_value)
+    assert result == expected_value
     mock_serializer.serialize.assert_not_called()
     mock_serializer.deserialize.assert_not_called()
 
@@ -103,8 +103,8 @@ def test_serialize_null(mock_serializer):
 def test_deserialize_null(mock_serializer):
     """Test deserialization to None."""
     test_value = None
-    test_schema = generate_schema("NoneType", test_value)
-    result = BasicProcessor(mock_serializer).deserialize(test_schema)
+    kwargs = {TYPE_FIELD: "NoneType"}
+    result = BasicProcessor(mock_serializer).deserialize(test_value, **kwargs)
 
     assert result is None
     mock_serializer.serialize.assert_not_called()

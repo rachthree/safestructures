@@ -11,7 +11,7 @@ from safestructures.processors.iterable import (
 from safestructures.processors.tensor import NumpyProcessor
 from safestructures.utils.module import is_available
 
-BASIC_PROCESS_MAP = {str(t): BasicProcessor for t in BASIC_TYPES}
+BASIC_PROCESS_MAP = {t: BasicProcessor for t in BASIC_TYPES}
 iterable_cls_list = [
     ListProcessor,
     SetProcessor,
@@ -20,7 +20,7 @@ iterable_cls_list = [
     DataclassProcessor,
 ]
 ITERABLE_PROCESS_MAP = {
-    str(processor.data_type): processor for processor in iterable_cls_list
+    processor.data_type: processor for processor in iterable_cls_list
 }
 DEFAULT_PROCESS_MAP = {**BASIC_PROCESS_MAP, **ITERABLE_PROCESS_MAP}
 DEFAULT_PROCESS_MAP[str(NumpyProcessor.data_type)] = NumpyProcessor
