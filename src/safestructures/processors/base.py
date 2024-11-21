@@ -126,7 +126,6 @@ class DataProcessor(ABC):
             for k in data_or_schema:
                 if k not in [VALUE_FIELD]:
                     kwargs[k] = data_or_schema[k]
-            print(f"self.serializer.mode: {self.serializer.mode}")
             return self.deserialize(data_or_schema[VALUE_FIELD], **kwargs)
 
         else:

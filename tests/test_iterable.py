@@ -4,6 +4,7 @@ from dataclasses import dataclass, fields, is_dataclass
 from unittest import mock
 
 import pytest
+from utils import compare_nested_schemas, compare_values
 
 from safestructures import Serializer
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
@@ -310,64 +311,6 @@ def test_deserialize_dataclass(mock_deserializer):
     mock_deserializer.deserialize.assert_has_calls(mock_calls, any_order=False)
 
 
-def compare_nested_schemas(schema1: dict, schema2: dict):
-    """Recursively compare two schemas.
-
-    If TYPE_FIELD is 'set', the order of elements in VALUE_FIELD (as strings)
-        does not matter.
-    Assumes all VALUE_FIELD fields are strings or lists of strings.
-
-    Args:
-        schema1 (dict): Schema to compare.
-        schema2 (dict): Other schema to compare.
-    """
-
-    def compare_values(value1, value2, value_type: str):
-        """Compare values based on their type."""
-        print(f"Comparing {value1} against {value2}")
-        if value_type == "set":
-            # Compare sets (order does not matter)
-            # TODO: Account for sets with tuple items.
-            return set(map(tuple, value1)) == set(map(tuple, value2))
-        elif value_type in {"list", "tuple"}:
-            # Compare lists/tuples (order matters)
-            return len(value1) == len(value2) and all(
-                compare_nested_schemas(item1, item2)
-                for item1, item2 in zip(value1, value2)
-            )
-        elif value_type in {"dict", "Dataclass"}:
-            return all(
-                compare_nested_schemas(value1[key], value2[key]) for key in value1
-            )
-        else:
-            # For primitive types, compare values as strings
-            return str(value1) == str(value2)
-
-    if set(schema1.keys()) != set(schema2.keys()):
-        return False
-
-    if TYPE_FIELD in schema1:
-        if schema1[TYPE_FIELD] != schema2[TYPE_FIELD]:
-            return False
-
-        if schema1[TYPE_FIELD] == "dict":
-            if not compare_nested_schemas(schema1[KEYS_FIELD], schema2[KEYS_FIELD]):
-                return False
-
-    # Compare the VALUE_FIELD fields
-    if VALUE_FIELD in schema1:
-        if not compare_values(
-            schema1[VALUE_FIELD], schema2[VALUE_FIELD], schema1[TYPE_FIELD]
-        ):
-            return False
-    else:
-        for k in schema1:
-            if not compare_nested_schemas(schema1[k], schema2[k]):
-                return False
-
-    return True
-
-
 def test_nested_structure():
     """Integration test for a nested structure without tensors."""
 
@@ -550,3 +493,6 @@ def test_nested_structure():
     assert compare_nested_schemas(expected_schema, schema)
 
     # Deserialization
+    serializer.mode = Mode.LOAD
+    value = serializer.deserialize(schema)
+    assert compare_values(test_input, value)
