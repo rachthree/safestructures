@@ -310,6 +310,64 @@ def test_deserialize_dataclass(mock_deserializer):
     mock_deserializer.deserialize.assert_has_calls(mock_calls, any_order=False)
 
 
+def compare_nested_schemas(schema1: dict, schema2: dict):
+    """Recursively compare two schemas.
+
+    If TYPE_FIELD is 'set', the order of elements in VALUE_FIELD (as strings)
+        does not matter.
+    Assumes all VALUE_FIELD fields are strings or lists of strings.
+
+    Args:
+        schema1 (dict): Schema to compare.
+        schema2 (dict): Other schema to compare.
+    """
+
+    def compare_values(value1, value2, value_type: str):
+        """Compare values based on their type."""
+        print(f"Comparing {value1} against {value2}")
+        if value_type == "set":
+            # Compare sets (order does not matter)
+            # TODO: Account for sets with tuple items.
+            return set(map(tuple, value1)) == set(map(tuple, value2))
+        elif value_type in {"list", "tuple"}:
+            # Compare lists/tuples (order matters)
+            return len(value1) == len(value2) and all(
+                compare_nested_schemas(item1, item2)
+                for item1, item2 in zip(value1, value2)
+            )
+        elif value_type in {"dict", "Dataclass"}:
+            return all(
+                compare_nested_schemas(value1[key], value2[key]) for key in value1
+            )
+        else:
+            # For primitive types, compare values as strings
+            return str(value1) == str(value2)
+
+    if set(schema1.keys()) != set(schema2.keys()):
+        return False
+
+    if TYPE_FIELD in schema1:
+        if schema1[TYPE_FIELD] != schema2[TYPE_FIELD]:
+            return False
+
+        if schema1[TYPE_FIELD] == "dict":
+            if not compare_nested_schemas(schema1[KEYS_FIELD], schema2[KEYS_FIELD]):
+                return False
+
+    # Compare the VALUE_FIELD fields
+    if VALUE_FIELD in schema1:
+        if not compare_values(
+            schema1[VALUE_FIELD], schema2[VALUE_FIELD], schema1[TYPE_FIELD]
+        ):
+            return False
+    else:
+        for k in schema1:
+            if not compare_nested_schemas(schema1[k], schema2[k]):
+                return False
+
+    return True
+
+
 def test_nested_structure():
     """Integration test for a nested structure without tensors."""
 
@@ -351,9 +409,144 @@ def test_nested_structure():
         },
     ]
 
+    expected_schema = {
+        TYPE_FIELD: "list",
+        VALUE_FIELD: [
+            {
+                TYPE_FIELD: "tuple",
+                VALUE_FIELD: [
+                    {TYPE_FIELD: "int", VALUE_FIELD: "42"},
+                    {TYPE_FIELD: "str", VALUE_FIELD: "answer to everything"},
+                    {
+                        TYPE_FIELD: "dict",
+                        VALUE_FIELD: {
+                            "origin": {TYPE_FIELD: "str", VALUE_FIELD: "Deep Thought"}
+                        },
+                        KEYS_FIELD: {
+                            "origin": {TYPE_FIELD: "str", VALUE_FIELD: "origin"}
+                        },
+                    },
+                ],
+            },
+            {
+                TYPE_FIELD: "dict",
+                VALUE_FIELD: {
+                    "name": {
+                        TYPE_FIELD: "str",
+                        VALUE_FIELD: "obi-wan",
+                    },
+                    "midichlorian_count": {
+                        TYPE_FIELD: "int",
+                        VALUE_FIELD: "13000",
+                    },
+                    "allies": {
+                        TYPE_FIELD: "list",
+                        VALUE_FIELD: [
+                            {TYPE_FIELD: "str", VALUE_FIELD: "anakin"},
+                            {TYPE_FIELD: "str", VALUE_FIELD: "ahsoka"},
+                        ],
+                    },
+                },
+                KEYS_FIELD: {
+                    "name": {TYPE_FIELD: "str", VALUE_FIELD: "name"},
+                    "midichlorian_count": {
+                        TYPE_FIELD: "str",
+                        VALUE_FIELD: "midichlorian_count",
+                    },
+                    "allies": {TYPE_FIELD: "str", VALUE_FIELD: "allies"},
+                },
+            },
+            {
+                TYPE_FIELD: "Dataclass",
+                VALUE_FIELD: {
+                    "name": {
+                        TYPE_FIELD: "str",
+                        VALUE_FIELD: "anakin",
+                    },
+                    "midichlorian_count": {
+                        TYPE_FIELD: "int",
+                        VALUE_FIELD: "27000",
+                    },
+                    "chosen_one": {
+                        TYPE_FIELD: "bool",
+                        VALUE_FIELD: True,
+                    },
+                },
+            },
+            {
+                TYPE_FIELD: "set",
+                VALUE_FIELD: [
+                    {TYPE_FIELD: "int", VALUE_FIELD: "8"},
+                    {TYPE_FIELD: "str", VALUE_FIELD: "black"},
+                    {TYPE_FIELD: "int", VALUE_FIELD: "13"},
+                    {TYPE_FIELD: "str", VALUE_FIELD: "red"},
+                ],
+            },
+            {
+                TYPE_FIELD: "list",
+                VALUE_FIELD: [
+                    {TYPE_FIELD: "complex", VALUE_FIELD: "(1.618+3.14j)"},
+                    {TYPE_FIELD: "float", VALUE_FIELD: "-123.56789101112"},
+                    {TYPE_FIELD: "str", VALUE_FIELD: "abc123"},
+                    {
+                        TYPE_FIELD: "tuple",
+                        VALUE_FIELD: [
+                            {TYPE_FIELD: "str", VALUE_FIELD: "shii-CHO"},
+                            {TYPE_FIELD: "str", VALUE_FIELD: "makashi"},
+                            {TYPE_FIELD: "str", VALUE_FIELD: "SORESU"},
+                            {TYPE_FIELD: "str", VALUE_FIELD: "ataru"},
+                            {
+                                TYPE_FIELD: "tuple",
+                                VALUE_FIELD: [
+                                    {TYPE_FIELD: "str", VALUE_FIELD: "Shien"},
+                                    {TYPE_FIELD: "str", VALUE_FIELD: "Djem So"},
+                                ],
+                            },
+                            {TYPE_FIELD: "str", VALUE_FIELD: "Niman"},
+                            {
+                                TYPE_FIELD: "tuple",
+                                VALUE_FIELD: [
+                                    {TYPE_FIELD: "str", VALUE_FIELD: "Juyo"},
+                                    {TYPE_FIELD: "str", VALUE_FIELD: "Vaapad"},
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                TYPE_FIELD: "dict",
+                VALUE_FIELD: {
+                    "grandmaster": {
+                        TYPE_FIELD: "Dataclass",
+                        VALUE_FIELD: {
+                            "name": {TYPE_FIELD: "str", VALUE_FIELD: "yoda"},
+                            "midichlorian_count": {
+                                TYPE_FIELD: "int",
+                                VALUE_FIELD: "18000",
+                            },
+                            "chosen_one": {
+                                TYPE_FIELD: "bool",
+                                VALUE_FIELD: False,
+                            },
+                        },
+                    },
+                    "form": {TYPE_FIELD: "int", VALUE_FIELD: "4"},
+                    "66": {TYPE_FIELD: "str", VALUE_FIELD: "survived"},
+                },
+                KEYS_FIELD: {
+                    "grandmaster": {TYPE_FIELD: "str", VALUE_FIELD: "grandmaster"},
+                    "form": {TYPE_FIELD: "str", VALUE_FIELD: "form"},
+                    "66": {TYPE_FIELD: "int", VALUE_FIELD: "66"},
+                },
+            },
+        ],
+    }
+
     # Serialization
     serializer = Serializer()
     serializer.mode = Mode.SAVE
-    serializer.serialize(test_input)
+    schema = serializer.serialize(test_input)
+    assert compare_nested_schemas(expected_schema, schema)
 
     # Deserialization

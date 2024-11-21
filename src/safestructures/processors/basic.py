@@ -12,6 +12,13 @@ BASIC_TYPES = (str, numbers.Number, type(None), bool)
 class BasicProcessor(DataProcessor):
     """Processor for basic datatypes."""
 
+    def get_schema_type(self, *, data: Union[str, numbers.Number, None, bool]) -> str:
+        """Overload `DataProcessor.get_schema_type`.
+
+        Provide the actual type of the basic type rather than just `Any`.
+        """
+        return type(data).__name__
+
     def serialize(
         self, value: Union[str, numbers.Number, None, bool]
     ) -> Union[str, None, bool]:

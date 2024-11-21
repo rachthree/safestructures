@@ -77,9 +77,8 @@ class DataclassProcessor(DataProcessor):
 
     data_type = Dataclass
 
-    @property
-    def schema_type(self):
-        """Overload `DataProcessor.schema_type`.
+    def get_schema_type(self, *, data: Dataclass = None) -> str:
+        """Overload `DataProcessor.get_schema_type`.
 
         Provide a consistent schema type for all dataclasses.
         """
