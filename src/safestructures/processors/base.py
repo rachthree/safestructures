@@ -162,26 +162,40 @@ class TensorProcessor(DataProcessor, ABC):
 
     @abstractmethod
     def to_cpu(self, tensor: Any) -> Any:
-        """Move tensor to CPU."""
+        """Move tensor to CPU.
+
+        Args:
+            tensor (Any): The tensor to send to CPU.
+
+        Returns:
+            The tensor on CPU.
+        """
         pass
 
     @abstractmethod
     def to_numpy(self, tensor: Any) -> np.ndarray:
-        """Convert tensor to Numpy array."""
+        """Convert tensor to Numpy array.
+
+        Args:
+            tensor (Any): The tensor to convert to Numpy.
+
+        Returns:
+            np.ndarray: The tensor as a Numpy array.
+        """
         pass
 
-    def process_tensor(self, tensor: Any) -> str:
+    def process_tensor(self, tensor: np.ndarray) -> str:
         """Process a tensor for serialization.
 
         Args:
-            tensor (Any): The tensor to serialize.
+            tensor (np.ndarray): The tensor as Numpy array.
 
         Returns:
-            dict: The schema to describe the tensor, namely the type
-                and its ID which will be used as a key in safetensors.
+            str: The tensor ID.
         """
+        assert isinstance(tensor, np.ndarray), "Tensor must be np.ndarry at this point."
         _id = str(len(self.serializer.tensors))
-        self.serializer.tensors[_id] = self.serialize(tensor)
+        self.serializer.tensors[_id] = tensor
         return _id
 
     def serialize(self, tensor: Any) -> dict:

@@ -1,4 +1,4 @@
-"""Tests for the basic datatype processor."""
+"""Tests for the basic datatype processors."""
 from unittest import mock
 
 import pytest
