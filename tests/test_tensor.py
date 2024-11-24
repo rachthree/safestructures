@@ -105,3 +105,20 @@ def test_serialize_tensor(
         _expected_id = str(i)
         check_cpu_fn(mock_serializer.tensors[_expected_id])
         is_equal_fn(mock_serializer.tensors[_expected_id], test_tensors[i])
+
+
+@pytest.mark.parametrize("processor_cls", [NumpyProcessor, TorchProcessor])
+def test_deserialize_tensor(mock_serializer, processor_cls: TensorProcessor):
+    """Test tensor processor deserialization."""
+    test_tensors = []
+    for i in range(N_TENSORS):
+        input_tensor = _random_tensor_numpy()
+        mock_serializer.tensors[str(i)] = input_tensor
+        test_tensors.append(input_tensor)
+
+    processor = processor_cls(mock_serializer)
+    for i in range(N_TENSORS):
+        np.testing.assert_equal(processor.deserialize(str(i)), test_tensors[i])
+
+    mock_serializer.serialize.assert_not_called()
+    mock_serializer.deserialize.assert_not_called()
