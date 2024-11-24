@@ -400,7 +400,7 @@ def test_nested_structure():
                 },
             },
             {
-                TYPE_FIELD: "Dataclass",
+                TYPE_FIELD: "dataclass",
                 VALUE_FIELD: {
                     "name": {
                         TYPE_FIELD: "str",
@@ -461,7 +461,7 @@ def test_nested_structure():
                 TYPE_FIELD: "dict",
                 VALUE_FIELD: {
                     "grandmaster": {
-                        TYPE_FIELD: "Dataclass",
+                        TYPE_FIELD: "dataclass",
                         VALUE_FIELD: {
                             "name": {TYPE_FIELD: "str", VALUE_FIELD: "yoda"},
                             "midichlorian_count": {

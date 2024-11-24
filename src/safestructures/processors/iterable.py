@@ -1,10 +1,10 @@
 """Plugins to process iterables, including dataclasses."""
 
 import dataclasses
-from typing import Protocol, runtime_checkable
 
-from safestructures.constants import KEYS_FIELD
+from safestructures.constants import DATACLASS_NAME, KEYS_FIELD
 from safestructures.processors.base import DataProcessor, ListBaseProcessor
+from safestructures.utils.dataclass import Dataclass
 
 
 class ListProcessor(ListBaseProcessor):
@@ -64,14 +64,6 @@ class DictProcessor(DataProcessor):
         return results
 
 
-@runtime_checkable
-@dataclasses.dataclass
-class Dataclass(Protocol):
-    """Protocol to help provide a 'dataclass' type."""
-
-    pass
-
-
 class DataclassProcessor(DataProcessor):
     """Processor for dataclass data."""
 
@@ -97,7 +89,7 @@ class DataclassProcessor(DataProcessor):
     def deserialize(self, serialized: dict, **kwargs) -> Dataclass:
         """Overload `DataProcessor.deserialize`."""
         fields = list(serialized.keys())
-        cls = dataclasses.make_dataclass("Dataclass", fields)
+        cls = dataclasses.make_dataclass(DATACLASS_NAME, fields)
         dc_kwargs = {}
         for k, v in serialized.items():
             dc_kwargs[k] = self.serializer.deserialize(v)

@@ -3,6 +3,9 @@ import importlib
 from types import ModuleType
 from typing import Type
 
+from safestructures.constants import DATACLASS_NAME
+from safestructures.utils.dataclass import Dataclass
+
 
 def load_module(module_name: str) -> ModuleType:
     """Load a specified Python module.
@@ -30,6 +33,9 @@ def is_available(module_name: str) -> bool:
 
 def get_import_path(data_type: Type):
     """Provide the full Python import path for a data type (class)."""
+    if data_type is Dataclass:
+        return DATACLASS_NAME
+
     module = data_type.__module__
     name = data_type.__qualname__
     if module == "builtins":

@@ -27,8 +27,13 @@ class DataProcessor(ABC):
         """
         self.serializer = serializer
 
-    def get_schema_type(self, *, data: Any = None) -> str:
-        """Provide the data type in a compatible format for the schema."""
+    @property
+    def schema_type(self) -> str:
+        """Provide the data type in schema-compatible format.
+
+        Returns:
+            str: The import path of the data type.
+        """
         return get_import_path(self.data_type)
 
     @abstractmethod
@@ -91,7 +96,7 @@ class DataProcessor(ABC):
         """
         mode = self.serializer.mode
         if mode == Mode.SAVE:
-            schema = {TYPE_FIELD: self.get_schema_type(data=data_or_schema)}
+            schema = {TYPE_FIELD: self.schema_type}
 
             schema[VALUE_FIELD] = self.serialize(data_or_schema)
             extra = self.serialize_extra(data_or_schema)
@@ -124,7 +129,7 @@ class DataProcessor(ABC):
         elif mode == Mode.LOAD:
             kwargs = {}
             for k in data_or_schema:
-                if k not in [VALUE_FIELD]:
+                if k not in [TYPE_FIELD, VALUE_FIELD]:
                     kwargs[k] = data_or_schema[k]
             return self.deserialize(data_or_schema[VALUE_FIELD], **kwargs)
 

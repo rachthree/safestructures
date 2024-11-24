@@ -2,7 +2,6 @@
 import builtins
 import importlib
 import json
-import numbers
 import types
 from copy import deepcopy
 from dataclasses import is_dataclass
@@ -14,6 +13,7 @@ from safetensors import safe_open
 from safetensors.numpy import save_file
 
 from safestructures.constants import (
+    DATACLASS_NAME,
     Mode,
     SCHEMA_FIELD,
     SCHEMA_VERSION,
@@ -52,7 +52,7 @@ class Serializer:
         if type_str in {"None", "NoneType"}:
             return types.NoneType
 
-        if type_str == "Dataclass":
+        if type_str == DATACLASS_NAME:
             return Dataclass
 
         # Check if the type is a built-in (e.g., "int", "str", "list")
@@ -96,11 +96,8 @@ class Serializer:
             dict: The schema showing the datatypes and serialized values.
         """
         data_type = type(data)
-        if data_type not in self.process_map:
-            if issubclass(data_type, numbers.Number):
-                data_type = numbers.Number
-            elif is_dataclass(data):
-                data_type = Dataclass
+        if data_type not in self.process_map and is_dataclass(data):
+            data_type = Dataclass
 
         try:
             return self.process_map[data_type](self)(data)
@@ -122,8 +119,6 @@ class Serializer:
         data_type_str = schema[TYPE_FIELD]
 
         data_type = self._get_data_type(data_type_str)
-        if data_type not in self.process_map and issubclass(data_type, numbers.Number):
-            data_type = numbers.Number
 
         try:
             return self.process_map[data_type](self)(schema)

@@ -2,7 +2,7 @@
 from dataclasses import fields, is_dataclass
 from typing import Union
 
-from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
+from safestructures.constants import DATACLASS_NAME, KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
 
 
 def check_schema(
@@ -67,7 +67,7 @@ def compare_nested_schemas(schema1: dict, schema2: dict):
                 compare_nested_schemas(item1, item2)
                 for item1, item2 in zip(value1, value2)
             )
-        elif value_type in {"dict", "Dataclass"}:
+        elif value_type in {"dict", DATACLASS_NAME}:
             return all(
                 compare_nested_schemas(value1[key], value2[key]) for key in value1
             )

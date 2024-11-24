@@ -1,6 +1,13 @@
 """Defaults."""
 
-from safestructures.processors.basic import BASIC_TYPES, BasicProcessor
+from safestructures.processors.basic import (
+    BoolProcessor,
+    ComplexProcessor,
+    FloatProcessor,
+    IntProcessor,
+    NoneProcessor,
+    StringProcessor,
+)
 from safestructures.processors.iterable import (
     DataclassProcessor,
     DictProcessor,
@@ -11,7 +18,16 @@ from safestructures.processors.iterable import (
 from safestructures.processors.tensor import NumpyProcessor
 from safestructures.utils.module import is_available
 
-BASIC_PROCESS_MAP = {t: BasicProcessor for t in BASIC_TYPES}
+basic_cls_list = [
+    IntProcessor,
+    FloatProcessor,
+    ComplexProcessor,
+    StringProcessor,
+    BoolProcessor,
+    NoneProcessor,
+]
+
+BASIC_PROCESS_MAP = {processor.data_type: processor for processor in basic_cls_list}
 iterable_cls_list = [
     ListProcessor,
     SetProcessor,

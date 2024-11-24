@@ -7,6 +7,7 @@ KEYS_FIELD = "keys"
 SCHEMA_FIELD = "_safestructures_schema_"
 VERSION_FIELD = "_safestructures_schema_version_"
 SCHEMA_VERSION = "1.0.0"
+DATACLASS_NAME = "dataclass"
 
 
 class Mode(Enum):

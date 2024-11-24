@@ -1,44 +1,73 @@
 """Plugins to process basic data types."""
 import numbers
-from pydoc import locate
-from typing import Union
 
-from safestructures.constants import TYPE_FIELD
 from safestructures.processors.base import DataProcessor
 
-BASIC_TYPES = (str, numbers.Number, type(None), bool)
 
+class NumberProcessor(DataProcessor):
+    """Processor for numeric datatypes."""
 
-class BasicProcessor(DataProcessor):
-    """Processor for basic datatypes."""
-
-    def get_schema_type(self, *, data: Union[str, numbers.Number, None, bool]) -> str:
-        """Overload `DataProcessor.get_schema_type`.
-
-        Provide the actual type of the basic type rather than just `Any`.
-        """
-        return type(data).__name__
-
-    def serialize(
-        self, value: Union[str, numbers.Number, None, bool]
-    ) -> Union[str, None, bool]:
+    def serialize(self, value: numbers.Number) -> str:
         """Overload `DataProcessor.serialize`.
 
-        For simple data types other than None and boolean, this
-        casts to a string to be stored in the metadata, as is
-        required by safetensors.
+        For numeric datatypes, this casts to a string to be stored
+        in the metadata, as is required by safetensors.
         """
-        if value is not None and not isinstance(value, bool):
-            value = str(value)
+        return str(value)
 
+    def deserialize(self, serialized: str) -> numbers.Number:
+        """Overload `DataProcessor.deserialize`."""
+        return self.data_type(serialized)
+
+
+class IntProcessor(NumberProcessor):
+    """Int processor."""
+
+    data_type = int
+
+
+class FloatProcessor(NumberProcessor):
+    """Float processor."""
+
+    data_type = float
+
+
+class ComplexProcessor(NumberProcessor):
+    """Complex number processor."""
+
+    data_type = complex
+
+
+class PassthroughProcessor(DataProcessor):
+    """Processor that passes through compatible values.
+
+    Values are already compatible with JSON + Safetensors.
+    """
+
+    def serialize(self, value: str | bool | None) -> str | bool | None:
+        """Overload `DataProcessor.serialize`."""
+        # value is already compatible, just pass through
         return value
 
-    def deserialize(
-        self, serialized: Union[str, None, bool], **kwargs
-    ) -> Union[str, numbers.Number, None, bool]:
+    def deserialize(self, serialized: str | bool | None) -> str | bool | None:
         """Overload `DataProcessor.deserialize`."""
-        if serialized is None:
-            return None
+        # value is already deserialized, just pass through
+        return serialized
 
-        t = locate(kwargs[TYPE_FIELD])
-        return t(serialized)
+
+class StringProcessor(PassthroughProcessor):
+    """String processor."""
+
+    data_type = str
+
+
+class BoolProcessor(PassthroughProcessor):
+    """Boolean processor."""
+
+    data_type = bool
+
+
+class NoneProcessor(PassthroughProcessor):
+    """None / null processor."""
+
+    data_type = type(None)
