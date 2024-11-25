@@ -2,6 +2,9 @@
 from dataclasses import fields, is_dataclass
 from typing import Union
 
+import numpy as np
+import torch
+
 from safestructures.constants import DATACLASS_NAME, KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
 
 
@@ -133,6 +136,12 @@ def compare_values(value1, value2):
                 for k in value1:
                     if not compare_values(value1[k], value2[k]):
                         return False
+            elif isinstance(value1, np.ndarray):
+                print("numpy array found")
+                np.testing.assert_equal(value1, value2)
+            elif isinstance(value1, torch.Tensor):
+                print("torch tensor found")
+                torch.testing.assert_close(value1, value2)
             else:
                 # TODO: Handle set containing tuples
                 if not value1 == value2:

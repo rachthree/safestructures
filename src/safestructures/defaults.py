@@ -39,9 +39,9 @@ ITERABLE_PROCESS_MAP = {
     processor.data_type: processor for processor in iterable_cls_list
 }
 DEFAULT_PROCESS_MAP = {**BASIC_PROCESS_MAP, **ITERABLE_PROCESS_MAP}
-DEFAULT_PROCESS_MAP[str(NumpyProcessor.data_type)] = NumpyProcessor
+DEFAULT_PROCESS_MAP[NumpyProcessor.data_type] = NumpyProcessor
 
 if is_available("torch"):
     from safestructures.processors.tensor import TorchProcessor
 
-    DEFAULT_PROCESS_MAP[str(TorchProcessor.data_type)] = TorchProcessor
+    DEFAULT_PROCESS_MAP[TorchProcessor.data_type] = TorchProcessor
