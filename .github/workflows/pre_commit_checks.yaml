@@ -1,0 +1,30 @@
+name: Pre-commit Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 'release/**'
+  push:
+    branches:
+      - main
+      - 'release/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit-checks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: |
+        pip3 install pre-commit
+        pre-commit install
+        if [ ${{ github.ref }} == 'refs/heads/main' ]; then \
+          SKIP=no-commit-to-branch pre-commit run --all-files; \
+        else \
+          pre-commit run --all-files; \
+        fi

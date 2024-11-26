@@ -1,0 +1,35 @@
+name: CI Tests
+on:
+  pull_request:
+    branches:
+      - main
+      - release/**
+  push:
+    branches:
+      - main
+      - release/**
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
+    container:
+      image: python:${{ matrix.python-version }}
+    steps:
+      - name: Get safestructures
+        uses: actions/checkout@v4
+      - name: Install safestructures
+        run: |
+          pip install --upgrade pip
+          pip install .[test]
+      - name: Test safestructures
+        run: pytest tests
