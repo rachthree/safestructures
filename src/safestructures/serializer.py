@@ -23,7 +23,6 @@ from safestructures.constants import (
 from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
 from safestructures.processors.iterable import Dataclass
-from safestructures.utils.module import get_import_path
 
 
 class Serializer:
@@ -39,11 +38,7 @@ class Serializer:
             for p in plugins:
                 self._check_plugin(p)
                 self.process_map[str(p.data_type)] = p
-                self.data_type_map[str(p.data_type)] = p.data_type
 
-        self.data_type_map: dict[str, DataProcessor] = {
-            get_import_path(d.data_type): d for d in self.process_map.values()
-        }
         self.mode: Optional[Mode] = None
 
     @staticmethod
