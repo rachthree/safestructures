@@ -153,7 +153,6 @@ class Serializer:
             self.tensors["null"] = np.array([0])
 
         save_file(self.tensors, save_path, metadata=metadata)
-        self.tensors.clear()
         return
 
     def load(
@@ -178,9 +177,8 @@ class Serializer:
         self.tensors.clear()
         self.mode = Mode.LOAD
         with safe_open(load_path, framework=framework, device=device) as f:
-            tensors = {}
             for k in f.keys():
-                tensors[k] = f.get_tensor(k)
+                self.tensors[k] = f.get_tensor(k)
             metadata = f.metadata()
 
         try:
@@ -192,5 +190,4 @@ class Serializer:
             )
 
         results = self.deserialize(schema)
-        self.tensors.clear()
         return results

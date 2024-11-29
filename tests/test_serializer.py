@@ -4,7 +4,9 @@ from unittest import mock
 
 import numpy as np
 import pytest
+import torch
 from safetensors import safe_open
+from safetensors.numpy import save_file
 
 from safestructures import Serializer
 from safestructures.constants import (
@@ -18,6 +20,11 @@ from safestructures.defaults import DEFAULT_PROCESS_MAP
 
 MOCK_DEFAULT_PROCESS_MAP = {
     data_type: mock.MagicMock() for data_type in DEFAULT_PROCESS_MAP
+}
+
+FRAMEWORK_TENSOR_TYPE_MAP = {
+    "np": np.ndarray,
+    "pt": torch.Tensor,
 }
 
 
@@ -86,8 +93,8 @@ class TestSerializer:
             )
             mock_serialize.assert_not_called()
 
-    def test_save(self, tmp_path):
-        """Test `Serializer.save`."""
+    def test_save_with_tensor(self, tmp_path):
+        """Test `Serializer.save` with tensors."""
         mock_schema = {TYPE_FIELD: "mock_type", VALUE_FIELD: "mock_value"}
         test_tensor = np.random.rand(4, 3, 224, 224)
         test_tensor_id = "mock_tensor_id"
@@ -98,11 +105,7 @@ class TestSerializer:
             self.tensors[test_tensor_id] = test_tensor
             return mock_schema
 
-        def mock_serialize_no_tensor(self, data):
-            return mock_schema
-
         file_name_with_tensor = "test_with_tensor.safestructures"
-        file_name_no_tensor = "test_no_tensor.safestructures"
 
         # Test saving with tensor
         temp_with_tensor_path = tmp_path / file_name_with_tensor
@@ -127,6 +130,17 @@ class TestSerializer:
         assert metadata[SCHEMA_FIELD] == json.dumps(mock_schema)
         assert metadata[VERSION_FIELD] == SCHEMA_VERSION
 
+    def test_save_no_tensor(self, tmp_path):
+        """Test `Serializer.save` without tensors."""
+        mock_schema = {TYPE_FIELD: "mock_type", VALUE_FIELD: "mock_value"}
+        mock_data = mock.Mock()
+        test_other_metadata = {"other_field": "other_value"}
+
+        def mock_serialize_no_tensor(self, data):
+            return mock_schema
+
+        file_name_no_tensor = "test_no_tensor.safestructures"
+
         # Test saving with no tensor
         temp_no_tensor_path = tmp_path / file_name_no_tensor
         with mock.patch(
@@ -149,3 +163,25 @@ class TestSerializer:
         assert metadata["other_field"] == "other_value"
         assert metadata[SCHEMA_FIELD] == json.dumps(mock_schema)
         assert metadata[VERSION_FIELD] == SCHEMA_VERSION
+
+    @pytest.mark.parametrize("framework", ["np", "pt"])
+    def test_load(self, tmp_path, framework):
+        """Test `Serialize.load`."""
+        mock_schema = {TYPE_FIELD: "mock_type", VALUE_FIELD: "mock_value"}
+        test_metadata = {SCHEMA_FIELD: json.dumps(mock_schema)}
+
+        temp_file_path = tmp_path / "test.safetensors"
+        tensor_id = "test_tensor_id"
+        mock_tensor_dict = {tensor_id: np.array([1, 2, 3, 4])}
+        save_file(mock_tensor_dict, temp_file_path, metadata=test_metadata)
+
+        serializer = Serializer()
+        mock_results = mock.Mock()
+        mock_deserializer = mock.MagicMock(return_value=mock_results)
+        with mock.patch.object(serializer, "deserialize", mock_deserializer):
+            results = serializer.load(temp_file_path, framework=framework)
+            mock_deserializer.assert_called_once_with(mock_schema)
+            assert results == mock_results
+            assert isinstance(
+                serializer.tensors[tensor_id], FRAMEWORK_TENSOR_TYPE_MAP[framework]
+            )
