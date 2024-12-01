@@ -23,7 +23,6 @@ from safestructures.constants import (
 from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
 from safestructures.processors.iterable import Dataclass
-from safestructures.utils.module import get_import_path
 
 
 class Serializer:
@@ -39,11 +38,7 @@ class Serializer:
             for p in plugins:
                 self._check_plugin(p)
                 self.process_map[str(p.data_type)] = p
-                self.data_type_map[str(p.data_type)] = p.data_type
 
-        self.data_type_map: dict[str, DataProcessor] = {
-            get_import_path(d.data_type): d for d in self.process_map.values()
-        }
         self.mode: Optional[Mode] = None
 
     @staticmethod
@@ -158,7 +153,6 @@ class Serializer:
             self.tensors["null"] = np.array([0])
 
         save_file(self.tensors, save_path, metadata=metadata)
-        self.tensors.clear()
         return
 
     def load(
@@ -183,9 +177,8 @@ class Serializer:
         self.tensors.clear()
         self.mode = Mode.LOAD
         with safe_open(load_path, framework=framework, device=device) as f:
-            tensors = {}
             for k in f.keys():
-                tensors[k] = f.get_tensor(k)
+                self.tensors[k] = f.get_tensor(k)
             metadata = f.metadata()
 
         try:
@@ -197,5 +190,4 @@ class Serializer:
             )
 
         results = self.deserialize(schema)
-        self.tensors.clear()
         return results

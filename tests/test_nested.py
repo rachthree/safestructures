@@ -11,6 +11,8 @@ from utils import compare_nested_schemas, compare_values
 from safestructures import Serializer
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
 
+FRAMEWORKS = ["np", "pt"]
+
 
 @dataclass
 class _TestDC:
@@ -274,8 +276,8 @@ TEST_CASES = [
 
 
 @pytest.mark.parametrize("test_input,expected_schema,native_tensor_fn", TEST_CASES)
-def test_nested_structure(test_input, expected_schema, native_tensor_fn):
-    """Integration test for a nested structure without tensors."""
+def test_core_methods(test_input, expected_schema, native_tensor_fn):
+    """Integration test for core serialize/deserialize methods."""
     # Serialization
     serializer = Serializer()
     serializer.mode = Mode.SAVE
@@ -286,9 +288,22 @@ def test_nested_structure(test_input, expected_schema, native_tensor_fn):
     serializer.mode = Mode.LOAD
 
     # At load, all tensors could possibly be at a different framework
-    # Mock this behavior by converting to the framework here
+    # Mock this behavior by converting to the original framework here
     for k, tensor in serializer.tensors.items():
         serializer.tensors[k] = native_tensor_fn(tensor)
 
     value = serializer.deserialize(schema)
     assert compare_values(test_input, value)
+
+
+@pytest.mark.parametrize("framework", FRAMEWORKS)
+@pytest.mark.parametrize("test_input,expected_schema,native_tensor_fn", TEST_CASES)
+def test_serializer_save_load(
+    tmp_path, test_input, expected_schema, native_tensor_fn, framework
+):
+    """Integration test for `Serializer` save/load methods."""
+    test_file = tmp_path / "Test.safetensors"
+    test_other_metadata = {"test_field": "test_value"}
+    Serializer().save(test_input, test_file, metadata=test_other_metadata)
+    loaded = Serializer().load(test_file, framework=framework)
+    compare_values(test_input, loaded)

@@ -1,4 +1,5 @@
 """Testing utilities."""
+from copy import deepcopy
 from dataclasses import fields, is_dataclass
 from typing import Union
 
@@ -103,6 +104,21 @@ def compare_nested_schemas(schema1: dict, schema2: dict):
     return True
 
 
+NP2F_MAP = {
+    np.ndarray: lambda x: x,
+    torch.Tensor: torch.from_numpy,
+}
+
+F2NP_MAP = {np.ndarray: lambda x: x, torch.Tensor: lambda x: x.numpy()}
+
+ASSERT_EQUAL_MAP = {
+    np.ndarray: np.testing.assert_equal,
+    torch.Tensor: torch.testing.assert_close,
+}
+
+FRAMEWORK_TENSORS = tuple(NP2F_MAP.keys())
+
+
 def compare_values(value1, value2):
     """Recursively compare two values."""
 
@@ -136,12 +152,17 @@ def compare_values(value1, value2):
                 for k in value1:
                     if not compare_values(value1[k], value2[k]):
                         return False
-            elif isinstance(value1, np.ndarray):
-                print("numpy array found")
-                np.testing.assert_equal(value1, value2)
-            elif isinstance(value1, torch.Tensor):
-                print("torch tensor found")
-                torch.testing.assert_close(value1, value2)
+
+            elif isinstance(value1, FRAMEWORK_TENSORS):
+                tensor_type = type(value1)
+                test_value2 = deepcopy(value2)
+                if not isinstance(test_value2, tensor_type):
+                    # convert to numpy, then to framework for generality
+                    test_value2 = F2NP_MAP[type(test_value2)](test_value2)
+                    test_value2 = NP2F_MAP[tensor_type](test_value2)
+
+                ASSERT_EQUAL_MAP[tensor_type](value1, test_value2)
+
             else:
                 # TODO: Handle set containing tuples
                 if not value1 == value2:
