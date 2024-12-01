@@ -72,7 +72,7 @@ class Serializer:
             f"{plugin} must be a safestructures.DataProcessor"
             " or safestructures.TensorProcessor"
         )
-        assert isinstance(plugin, DataProcessor), error_msg
+        assert issubclass(plugin, DataProcessor), error_msg
 
         if plugin.data_type in self.process_map:
             error_msg = (

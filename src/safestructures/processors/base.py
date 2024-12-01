@@ -10,7 +10,7 @@ from safestructures.constants import Mode, TYPE_FIELD, VALUE_FIELD
 from safestructures.utils.module import get_import_path
 
 if TYPE_CHECKING:
-    from safestructures import Serializer
+    from safestructures.serializer import Serializer
 
 
 class DataProcessor(ABC):

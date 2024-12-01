@@ -8,7 +8,6 @@ import torch
 from safetensors import safe_open
 from safetensors.numpy import save_file
 
-from safestructures import Serializer
 from safestructures.constants import (
     SCHEMA_FIELD,
     SCHEMA_VERSION,
@@ -17,6 +16,7 @@ from safestructures.constants import (
     VERSION_FIELD,
 )
 from safestructures.defaults import DEFAULT_PROCESS_MAP
+from safestructures.serializer import Serializer
 
 MOCK_DEFAULT_PROCESS_MAP = {
     data_type: mock.MagicMock() for data_type in DEFAULT_PROCESS_MAP

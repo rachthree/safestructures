@@ -1,8 +1,8 @@
 from importlib import metadata
 
 from safestructures.processors.base import DataProcessor, TensorProcessor
-from safestructures.serializer import Serializer
+from safestructures.wrapper import load_file, save_file
 
 __version__ = metadata.version("safestructures")
 
-__all__ = ["Serializer", "DataProcessor", "TensorProcessor"]
+__all__ = ["save_file", "load_file", "DataProcessor", "TensorProcessor"]
