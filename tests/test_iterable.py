@@ -5,7 +5,6 @@ from unittest import mock
 
 import pytest
 
-from safestructures import Serializer
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
 from safestructures.processors.iterable import (
     DataclassProcessor,
@@ -14,6 +13,7 @@ from safestructures.processors.iterable import (
     SetProcessor,
     TupleProcessor,
 )
+from safestructures.serializer import Serializer
 
 
 @pytest.fixture

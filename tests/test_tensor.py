@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 import torch
 
-from safestructures import Serializer
 from safestructures.processors.base import TensorProcessor
 from safestructures.processors.tensor import NumpyProcessor, TorchProcessor
+from safestructures.serializer import Serializer
 
 
 @pytest.fixture

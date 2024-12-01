@@ -8,8 +8,9 @@ import pytest
 import torch
 from utils import compare_nested_schemas, compare_values
 
-from safestructures import Serializer
+from safestructures import load_file, save_file
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
+from safestructures.serializer import Serializer
 
 FRAMEWORKS = ["np", "pt"]
 
@@ -306,4 +307,17 @@ def test_serializer_save_load(
     test_other_metadata = {"test_field": "test_value"}
     Serializer().save(test_input, test_file, metadata=test_other_metadata)
     loaded = Serializer().load(test_file, framework=framework)
+    compare_values(test_input, loaded)
+
+
+@pytest.mark.parametrize("framework", FRAMEWORKS)
+@pytest.mark.parametrize("test_input,expected_schema,native_tensor_fn", TEST_CASES)
+def test_wrapper_save_load(
+    tmp_path, test_input, expected_schema, native_tensor_fn, framework
+):
+    """Integration test for the wrapper `save_file` and `load_file` functions."""
+    test_file = tmp_path / "Test.safetensors"
+    test_other_metadata = {"test_field": "test_value"}
+    save_file(test_input, test_file, metadata=test_other_metadata)
+    loaded = load_file(test_file, framework=framework)
     compare_values(test_input, loaded)
