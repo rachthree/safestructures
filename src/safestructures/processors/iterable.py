@@ -69,13 +69,6 @@ class DataclassProcessor(DataProcessor):
 
     data_type = Dataclass
 
-    def get_schema_type(self, *, data: Dataclass = None) -> str:
-        """Overload `DataProcessor.get_schema_type`.
-
-        Provide a consistent schema type for all dataclasses.
-        """
-        return self.data_type.__name__
-
     def serialize(self, data: Dataclass) -> dict:
         """Overload `DataProcessor.serialize`."""
         fields = dataclasses.fields(data)

@@ -37,7 +37,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pre-commit"]
-test = ["pytest", "torch", "tensorflow", "flax", "paddlepaddle"]
+test = ["pytest", "torch", "tensorflow", "flax", "paddlepaddle", "transformers"]
 
 
 [project.urls]
