@@ -28,7 +28,7 @@ if is_available("torch"):
 
         data_type = torch.Tensor
 
-        def to_cpu(self, tensor: torch.Tensor) -> np.ndarray:
+        def to_cpu(self, tensor: torch.Tensor) -> torch.Tensor:
             """Overload `TensorProcessor.to_cpu`."""
             tensor = tensor.detach().cpu().contiguous()
             if torch.is_floating_point(tensor):
@@ -49,13 +49,13 @@ if is_available("tensorflow"):
 
         data_type = EagerTensor
 
-        def to_cpu(self, tensor: tf.Tensor) -> np.ndarray:
+        def to_cpu(self, tensor: EagerTensor) -> EagerTensor:
             """Overload `TensorProcessor.to_cpu`."""
             if tensor.device != "CPU:0":
                 with tf.device("CPU:0"):
                     tensor = tf.identity(tensor)
             return tensor
 
-        def to_numpy(self, tensor: tf.Tensor) -> np.ndarray:
+        def to_numpy(self, tensor: EagerTensor) -> np.ndarray:
             """Overload `TensorProcessor.to_numpy`."""
             return tensor.numpy()
