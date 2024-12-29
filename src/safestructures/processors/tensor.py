@@ -42,11 +42,12 @@ if is_available("torch"):
 
 if is_available("tensorflow"):
     import tensorflow as tf
+    from tensorflow.python.framework.ops import EagerTensor
 
     class TFProcessor(TensorProcessor):
         """TensorFlow tensor processor."""
 
-        data_type = tf.Tensor
+        data_type = EagerTensor
 
         def to_cpu(self, tensor: tf.Tensor) -> np.ndarray:
             """Overload `TensorProcessor.to_cpu`."""

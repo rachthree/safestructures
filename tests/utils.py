@@ -1,10 +1,13 @@
 """Testing utilities."""
+
 from copy import deepcopy
 from dataclasses import fields, is_dataclass
 from typing import Union
 
 import numpy as np
+import tensorflow as tf
 import torch
+from tensorflow.python.framework.ops import EagerTensor
 
 from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
 from safestructures.utils.dataclass import SafestructuresDataclass
@@ -105,16 +108,29 @@ def compare_nested_schemas(schema1: dict, schema2: dict):
     return True
 
 
+def _assert_tf_equal(tensor1, tensor2):
+    assert tf.math.reduce_all(tf.equal(tensor1, tensor2))
+
+
 NP2F_MAP = {
     np.ndarray: lambda x: x,
     torch.Tensor: torch.from_numpy,
+    tf.Tensor: tf.convert_to_tensor,
+    EagerTensor: tf.convert_to_tensor,
 }
 
-F2NP_MAP = {np.ndarray: lambda x: x, torch.Tensor: lambda x: x.numpy()}
+F2NP_MAP = {
+    np.ndarray: lambda x: x,
+    torch.Tensor: lambda x: x.numpy(),
+    tf.Tensor: lambda x: x.numpy(),
+    EagerTensor: lambda x: x.numpy(),
+}
 
 ASSERT_EQUAL_MAP = {
     np.ndarray: np.testing.assert_equal,
     torch.Tensor: torch.testing.assert_close,
+    tf.Tensor: _assert_tf_equal,
+    EagerTensor: _assert_tf_equal,
 }
 
 FRAMEWORK_TENSORS = tuple(NP2F_MAP.keys())

@@ -1,18 +1,21 @@
 """Test nested structures."""
+
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Callable, Union
 
 import numpy as np
 import pytest
+import tensorflow as tf
 import torch
+from tensorflow.python.framework.ops import EagerTensor
 from utils import compare_nested_schemas, compare_values
 
 from safestructures import load_file, save_file
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
 from safestructures.serializer import Serializer
 
-FRAMEWORKS = ["np", "pt"]
+FRAMEWORKS = ["np", "pt", "tf"]
 
 
 @dataclass
@@ -20,7 +23,7 @@ class _TestDC:
     name: str
     midichlorian_count: int
     chosen_one: bool
-    force_tensor: Union[np.array, torch.Tensor] = None
+    force_tensor: Union[np.array, torch.Tensor, EagerTensor] = None
 
 
 TEST_INPUT = [
@@ -267,11 +270,21 @@ def generate_torch_tensor():
     return torch.randn(4, 3, 128, 128)
 
 
+def generate_tf_tensor():
+    """Generate a random tf tensor."""
+    return tf.random.uniform(shape=(4, 3, 128, 128))
+
+
 TEST_CASES = [
     (TEST_INPUT, EXPECTED_SCHEMA, lambda x: x),
     generate_test_with_tensors(generate_numpy_tensor, "numpy.ndarray", lambda x: x),
     generate_test_with_tensors(
         generate_torch_tensor, "torch.Tensor", lambda x: torch.from_numpy(x)
+    ),
+    generate_test_with_tensors(
+        generate_tf_tensor,
+        "tensorflow.python.framework.ops.EagerTensor",
+        lambda x: tf.convert_to_tensor(x),
     ),
 ]
 
