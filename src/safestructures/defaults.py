@@ -45,3 +45,8 @@ if is_available("torch"):
     from safestructures.processors.tensor import TorchProcessor
 
     DEFAULT_PROCESS_MAP[TorchProcessor.data_type] = TorchProcessor
+
+if is_available("tensorflow"):
+    from safestructures.processors.tensor import TFProcessor
+
+    DEFAULT_PROCESS_MAP[TFProcessor.data_type] = TFProcessor

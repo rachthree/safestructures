@@ -1,14 +1,18 @@
 """Tests for the basic datatype processors."""
+
 from typing import Callable
 from unittest import mock
 
 import numpy as np
 import pytest
+import tensorflow as tf
 import torch
 
 from safestructures.processors.base import TensorProcessor
-from safestructures.processors.tensor import NumpyProcessor, TorchProcessor
+from safestructures.processors.tensor import NumpyProcessor, TFProcessor, TorchProcessor
 from safestructures.serializer import Serializer
+
+PROCESSOR_CLS_LIST = [NumpyProcessor, TorchProcessor, TFProcessor]
 
 
 @pytest.fixture
@@ -38,7 +42,7 @@ def _random_tensor_numpy():
 
 
 def _check_cpu_numpy(tensor: np.ndarray):
-    """Passthrough function sincce Numpy arrays are already on CPU."""
+    """Passthrough function since Numpy arrays are already on CPU."""
     pass
 
 
@@ -50,7 +54,18 @@ def _random_tensor_torch():
 
 def _check_cpu_torch(tensor: torch.Tensor):
     """Check that the torch tensor is on CPU."""
-    assert tensor.device == "cpu"
+    assert tensor.device == torch.device("cpu")
+
+
+def _random_tensor_tf():
+    """Generate a random numpy tensor."""
+    dims = _generate_dims()
+    return tf.random.uniform(shape=dims)
+
+
+def _check_cpu_tf(tensor: tf.Tensor):
+    """Check that the tensorflow tensor is on CPU."""
+    assert "CPU:0" in tensor.device
 
 
 def _check_torch_tensors(test_tensor: np.ndarray, expected_tensor: torch.Tensor):
@@ -58,10 +73,17 @@ def _check_torch_tensors(test_tensor: np.ndarray, expected_tensor: torch.Tensor)
     torch.testing.assert_close(torch.from_numpy(test_tensor), expected_tensor)
 
 
+def _check_tf_tensors(test_tensor: np.ndarray, expected_tensor: tf.Tensor):
+    assert tf.math.reduce_all(
+        tf.equal(tf.convert_to_tensor(test_tensor), expected_tensor)
+    ), "Tensors are not equal"
+
+
 N_TENSORS = 10
 serialize_test_cases = [
     (NumpyProcessor, _random_tensor_numpy, _check_cpu_numpy, np.testing.assert_equal),
     (TorchProcessor, _random_tensor_torch, _check_cpu_torch, _check_torch_tensors),
+    (TFProcessor, _random_tensor_tf, _check_cpu_tf, _check_tf_tensors),
 ]
 
 
@@ -78,13 +100,15 @@ def test_serialize_tensor(
     """Test tensor processor serialization."""
     processor = processor_cls(mock_serializer)
     test_tensors = []
-    with mock.patch.object(
-        processor, "to_cpu", wraps=processor.to_cpu
-    ) as mock_to_cpu, mock.patch.object(
-        processor, "to_numpy", wraps=processor.to_numpy
-    ) as mock_to_numpy, mock.patch.object(
-        processor, "process_tensor", wraps=processor.process_tensor
-    ) as mock_process_tensor:
+    with (
+        mock.patch.object(processor, "to_cpu", wraps=processor.to_cpu) as mock_to_cpu,
+        mock.patch.object(
+            processor, "to_numpy", wraps=processor.to_numpy
+        ) as mock_to_numpy,
+        mock.patch.object(
+            processor, "process_tensor", wraps=processor.process_tensor
+        ) as mock_process_tensor,
+    ):
         for _ in range(N_TENSORS):
             mock_to_cpu.reset_mock()
             mock_to_numpy.reset_mock()
@@ -103,11 +127,12 @@ def test_serialize_tensor(
 
     for i in range(N_TENSORS):
         _expected_id = str(i)
-        check_cpu_fn(mock_serializer.tensors[_expected_id])
+        assert isinstance(mock_serializer.tensors[_expected_id], np.ndarray)
+        check_cpu_fn(mock_to_numpy.call_args.args[0])
         is_equal_fn(mock_serializer.tensors[_expected_id], test_tensors[i])
 
 
-@pytest.mark.parametrize("processor_cls", [NumpyProcessor, TorchProcessor])
+@pytest.mark.parametrize("processor_cls", PROCESSOR_CLS_LIST)
 def test_deserialize_tensor(mock_serializer, processor_cls: TensorProcessor):
     """Test tensor processor deserialization."""
     test_tensors = []
