@@ -5,7 +5,7 @@ from typing import Protocol, runtime_checkable
 
 @runtime_checkable
 @dataclasses.dataclass
-class Dataclass(Protocol):
+class SafestructuresDataclass(Protocol):
     """Protocol to help provide a 'dataclass' type."""
 
     pass

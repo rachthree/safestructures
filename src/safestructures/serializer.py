@@ -13,7 +13,6 @@ from safetensors import safe_open
 from safetensors.numpy import save_file
 
 from safestructures.constants import (
-    DATACLASS_NAME,
     Mode,
     SCHEMA_FIELD,
     SCHEMA_VERSION,
@@ -22,7 +21,7 @@ from safestructures.constants import (
 )
 from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
-from safestructures.processors.iterable import Dataclass
+from safestructures.processors.iterable import SafestructuresDataclass
 
 
 class Serializer:
@@ -37,7 +36,7 @@ class Serializer:
         if plugins:
             for p in plugins:
                 self._check_plugin(p)
-                self.process_map[str(p.data_type)] = p
+                self.process_map[p.data_type] = p
 
         self.mode: Optional[Mode] = None
 
@@ -47,8 +46,8 @@ class Serializer:
         if type_str in {"None", "NoneType"}:
             return types.NoneType
 
-        if type_str == DATACLASS_NAME:
-            return Dataclass
+        if type_str == SafestructuresDataclass.__name__:
+            return SafestructuresDataclass
 
         # Check if the type is a built-in (e.g., "int", "str", "list")
         if hasattr(builtins, type_str):
@@ -92,7 +91,7 @@ class Serializer:
         """
         data_type = type(data)
         if data_type not in self.process_map and is_dataclass(data):
-            data_type = Dataclass
+            data_type = SafestructuresDataclass
 
         try:
             return self.process_map[data_type](self)(data)

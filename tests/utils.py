@@ -6,7 +6,8 @@ from typing import Union
 import numpy as np
 import torch
 
-from safestructures.constants import DATACLASS_NAME, KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
+from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
+from safestructures.utils.dataclass import SafestructuresDataclass
 
 
 def check_schema(
@@ -71,7 +72,7 @@ def compare_nested_schemas(schema1: dict, schema2: dict):
                 compare_nested_schemas(item1, item2)
                 for item1, item2 in zip(value1, value2)
             )
-        elif value_type in {"dict", DATACLASS_NAME}:
+        elif value_type in {"dict", SafestructuresDataclass.__name__}:
             return all(
                 compare_nested_schemas(value1[key], value2[key]) for key in value1
             )

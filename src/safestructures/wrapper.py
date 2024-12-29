@@ -33,7 +33,7 @@ def save_file(
     Returns:
         None.
     """
-    if plugins is not None and issubclass(plugins, BASE_PROCESSORS):
+    if plugins and not isinstance(plugins, list):
         plugins = [plugins]
 
     return Serializer(plugins=plugins).save(data, save_path, metadata=metadata)
@@ -63,7 +63,7 @@ def load_file(
     Returns:
         The loaded data.
     """
-    if plugins is not None and issubclass(plugins, BASE_PROCESSORS):
+    if plugins and not isinstance(plugins, list):
         plugins = [plugins]
 
     return Serializer(plugins=plugins).load(
