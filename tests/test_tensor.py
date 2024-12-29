@@ -3,16 +3,23 @@
 from typing import Callable
 from unittest import mock
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 import tensorflow as tf
 import torch
 
 from safestructures.processors.base import TensorProcessor
-from safestructures.processors.tensor import NumpyProcessor, TFProcessor, TorchProcessor
+from safestructures.processors.tensor import (
+    JaxProcessor,
+    NumpyProcessor,
+    TFProcessor,
+    TorchProcessor,
+)
 from safestructures.serializer import Serializer
 
-PROCESSOR_CLS_LIST = [NumpyProcessor, TorchProcessor, TFProcessor]
+PROCESSOR_CLS_LIST = [NumpyProcessor, TorchProcessor, TFProcessor, JaxProcessor]
 
 
 @pytest.fixture
@@ -57,6 +64,11 @@ def _check_cpu_torch(tensor: torch.Tensor):
     assert tensor.device == torch.device("cpu")
 
 
+def _check_torch_tensors(test_tensor: np.ndarray, expected_tensor: torch.Tensor):
+    """Check that the test numpy tensor and expected torch tensor are equal."""
+    torch.testing.assert_close(torch.from_numpy(test_tensor), expected_tensor)
+
+
 def _random_tensor_tf():
     """Generate a random numpy tensor."""
     dims = _generate_dims()
@@ -68,15 +80,26 @@ def _check_cpu_tf(tensor: tf.Tensor):
     assert "CPU:0" in tensor.device
 
 
-def _check_torch_tensors(test_tensor: np.ndarray, expected_tensor: torch.Tensor):
-    """Check that the test numpy tensor and expected torch tensor are equal."""
-    torch.testing.assert_close(torch.from_numpy(test_tensor), expected_tensor)
-
-
 def _check_tf_tensors(test_tensor: np.ndarray, expected_tensor: tf.Tensor):
     assert tf.math.reduce_all(
         tf.equal(tf.convert_to_tensor(test_tensor), expected_tensor)
     ), "Tensors are not equal"
+
+
+def _random_tensor_jax():
+    """Generate a random numpy tensor."""
+    key = jax.random.PRNGKey(42)
+    dims = _generate_dims()
+    return jax.random.uniform(key, shape=dims)
+
+
+def _check_cpu_jax(tensor: jax.Array):
+    """Check that the tensorflow tensor is on CPU."""
+    assert tensor.device.platform == "cpu"
+
+
+def _check_jax_tensors(test_tensor: np.ndarray, expected_tensor: jax.Array):
+    assert jnp.array_equal(jnp.array(test_tensor), expected_tensor)
 
 
 N_TENSORS = 10
@@ -84,6 +107,7 @@ serialize_test_cases = [
     (NumpyProcessor, _random_tensor_numpy, _check_cpu_numpy, np.testing.assert_equal),
     (TorchProcessor, _random_tensor_torch, _check_cpu_torch, _check_torch_tensors),
     (TFProcessor, _random_tensor_tf, _check_cpu_tf, _check_tf_tensors),
+    (JaxProcessor, _random_tensor_jax, _check_cpu_jax, _check_jax_tensors),
 ]
 
 

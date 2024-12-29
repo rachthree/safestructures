@@ -1,5 +1,6 @@
 """Defaults."""
 
+from safestructures.processors.base import DataProcessor
 from safestructures.processors.basic import (
     BoolProcessor,
     ComplexProcessor,
@@ -27,7 +28,17 @@ basic_cls_list = [
     NoneProcessor,
 ]
 
-BASIC_PROCESS_MAP = {processor.data_type: processor for processor in basic_cls_list}
+
+def register_processor(mapping: dict, processor: DataProcessor) -> dict:
+    """Register a processor for process mapping."""
+    mapping[processor.data_type] = processor
+    return mapping
+
+
+BASIC_PROCESS_MAP = {}
+for processor in basic_cls_list:
+    register_processor(BASIC_PROCESS_MAP, processor)
+
 iterable_cls_list = [
     ListProcessor,
     SetProcessor,
@@ -35,18 +46,27 @@ iterable_cls_list = [
     DictProcessor,
     DataclassProcessor,
 ]
-ITERABLE_PROCESS_MAP = {
-    processor.data_type: processor for processor in iterable_cls_list
-}
+
+ITERABLE_PROCESS_MAP = {}
+for processor in iterable_cls_list:
+    register_processor(ITERABLE_PROCESS_MAP, processor)
+
 DEFAULT_PROCESS_MAP = {**BASIC_PROCESS_MAP, **ITERABLE_PROCESS_MAP}
-DEFAULT_PROCESS_MAP[NumpyProcessor.data_type] = NumpyProcessor
+
+register_processor(DEFAULT_PROCESS_MAP, NumpyProcessor)
+
 
 if is_available("torch"):
     from safestructures.processors.tensor import TorchProcessor
 
-    DEFAULT_PROCESS_MAP[TorchProcessor.data_type] = TorchProcessor
+    register_processor(DEFAULT_PROCESS_MAP, TorchProcessor)
 
 if is_available("tensorflow"):
     from safestructures.processors.tensor import TFProcessor
 
-    DEFAULT_PROCESS_MAP[TFProcessor.data_type] = TFProcessor
+    register_processor(DEFAULT_PROCESS_MAP, TFProcessor)
+
+if is_available("jax"):
+    from safestructures.processors.tensor import JaxProcessor
+
+    register_processor(DEFAULT_PROCESS_MAP, JaxProcessor)

@@ -88,7 +88,9 @@ if is_available("jax"):
                 dtype = jnp.float32
                 tensor = tensor.astype(dtype)
 
-            tensor = jax.device_put(tensor, device=cpu_device)
+            if tensor.device.platform != "cpu":
+                tensor = jax.device_put(tensor, device=cpu_device)
+
             return tensor
 
         def to_numpy(self, tensor: ArrayImpl) -> np.ndarray:
