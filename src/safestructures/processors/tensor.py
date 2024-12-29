@@ -38,3 +38,23 @@ if is_available("torch"):
         def to_numpy(self, tensor: torch.Tensor) -> np.ndarray:
             """Overload `TensorProcessor.to_numpy`."""
             return tensor.numpy()
+
+
+if is_available("tensorflow"):
+    import tensorflow as tf
+
+    class TFProcessor(TensorProcessor):
+        """TensorFlow tensor processor."""
+
+        data_type = tf.Tensor
+
+        def to_cpu(self, tensor: tf.Tensor) -> np.ndarray:
+            """Overload `TensorProcessor.to_cpu`."""
+            if tensor.device != "CPU:0":
+                with tf.device("CPU:0"):
+                    tensor = tf.identity(tensor)
+            return tensor
+
+        def to_numpy(self, tensor: tf.Tensor) -> np.ndarray:
+            """Overload `TensorProcessor.to_numpy`."""
+            return tensor.numpy()
