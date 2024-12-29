@@ -45,7 +45,7 @@ class BertEncoderOutputProcessor(ModelOutputProcessor):
 
 
 def test_transformers_plugin(tmp_path):
-    """Test an example plugin."""
+    """Test example plugins for transformer activations."""
     config = BertConfig()
     model = BertModel(config)
     test_plugins = [BertOutputProcessor, BertEncoderOutputProcessor]
