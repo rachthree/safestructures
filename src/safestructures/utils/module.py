@@ -3,7 +3,7 @@ import importlib
 from types import ModuleType
 from typing import Type
 
-from safestructures.utils.dataclass import SafeStructuresDataclass
+from safestructures.utils.dataclass import SafestructuresDataclass
 
 
 def load_module(module_name: str) -> ModuleType:
@@ -32,8 +32,8 @@ def is_available(module_name: str) -> bool:
 
 def get_import_path(data_type: Type):
     """Provide the full Python import path for a data type (class)."""
-    if data_type is SafeStructuresDataclass:
-        return SafeStructuresDataclass.__name__
+    if data_type is SafestructuresDataclass:
+        return SafestructuresDataclass.__name__
 
     module = data_type.__module__
     name = data_type.__qualname__

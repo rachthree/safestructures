@@ -4,7 +4,7 @@ import dataclasses
 
 from safestructures.constants import KEYS_FIELD
 from safestructures.processors.base import DataProcessor, ListBaseProcessor
-from safestructures.utils.dataclass import SafeStructuresDataclass
+from safestructures.utils.dataclass import SafestructuresDataclass
 
 
 class ListProcessor(ListBaseProcessor):
@@ -67,9 +67,9 @@ class DictProcessor(DataProcessor):
 class DataclassProcessor(DataProcessor):
     """Processor for dataclass data."""
 
-    data_type = SafeStructuresDataclass
+    data_type = SafestructuresDataclass
 
-    def serialize(self, data: SafeStructuresDataclass) -> dict:
+    def serialize(self, data: SafestructuresDataclass) -> dict:
         """Overload `DataProcessor.serialize`."""
         fields = dataclasses.fields(data)
         results = {}
@@ -79,7 +79,7 @@ class DataclassProcessor(DataProcessor):
 
         return results
 
-    def deserialize(self, serialized: dict, **kwargs) -> SafeStructuresDataclass:
+    def deserialize(self, serialized: dict, **kwargs) -> SafestructuresDataclass:
         """Overload `DataProcessor.deserialize`."""
         fields = list(serialized.keys())
         cls = dataclasses.make_dataclass(self.data_type.__name__, fields)

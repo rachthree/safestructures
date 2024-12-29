@@ -99,7 +99,7 @@ EXPECTED_SCHEMA = {
             },
         },
         {
-            TYPE_FIELD: "SafeStructuresDataclass",
+            TYPE_FIELD: "SafestructuresDataclass",
             VALUE_FIELD: {
                 "name": {
                     TYPE_FIELD: "str",
@@ -164,7 +164,7 @@ EXPECTED_SCHEMA = {
             TYPE_FIELD: "dict",
             VALUE_FIELD: {
                 "grandmaster": {
-                    TYPE_FIELD: "SafeStructuresDataclass",
+                    TYPE_FIELD: "SafestructuresDataclass",
                     VALUE_FIELD: {
                         "name": {TYPE_FIELD: "str", VALUE_FIELD: "yoda"},
                         "midichlorian_count": {

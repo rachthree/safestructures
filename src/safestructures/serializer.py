@@ -21,7 +21,7 @@ from safestructures.constants import (
 )
 from safestructures.defaults import DEFAULT_PROCESS_MAP
 from safestructures.processors.base import DataProcessor
-from safestructures.processors.iterable import SafeStructuresDataclass
+from safestructures.processors.iterable import SafestructuresDataclass
 
 
 class Serializer:
@@ -46,8 +46,8 @@ class Serializer:
         if type_str in {"None", "NoneType"}:
             return types.NoneType
 
-        if type_str == SafeStructuresDataclass.__name__:
-            return SafeStructuresDataclass
+        if type_str == SafestructuresDataclass.__name__:
+            return SafestructuresDataclass
 
         # Check if the type is a built-in (e.g., "int", "str", "list")
         if hasattr(builtins, type_str):
@@ -91,7 +91,7 @@ class Serializer:
         """
         data_type = type(data)
         if data_type not in self.process_map and is_dataclass(data):
-            data_type = SafeStructuresDataclass
+            data_type = SafestructuresDataclass
 
         try:
             return self.process_map[data_type](self)(data)
