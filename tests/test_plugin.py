@@ -1,23 +1,47 @@
 """Test plugin support."""
-from dataclasses import make_dataclass
 
-from transformers.modeling_outputs import ModelOutput
+import torch
+from transformers import BertConfig, BertModel
+from transformers.modeling_outputs import BaseModelOutputWithPoolingAndCrossAttentions
+from utils import compare_values
 
+from safestructures import load_file, save_file
 from safestructures.processors.iterable import DataclassProcessor
-from safestructures.utils.dataclass import Dataclass
 
 
-class ModelOutputProcessor(DataclassProcessor):
+class BertModelOutputProcessor(DataclassProcessor):
     """Processor for transformer's ModelOutput class."""
 
-    data_type = ModelOutput
+    data_type = BaseModelOutputWithPoolingAndCrossAttentions
 
-    def deserialize(self, serialized: dict, **kwargs) -> Dataclass:
-        """Overload `DataProcessor.deserialize`."""
-        fields = list(serialized.keys())
-        cls = make_dataclass(self.data_type.__name__, fields)
-        dc_kwargs = {}
+    def deserialize(
+        self, serialized: dict, **kwargs
+    ) -> BaseModelOutputWithPoolingAndCrossAttentions:
+        """Overload DataclassProcessor.deserialize.
+
+        This is so the proper BertModelOutput is provided.
+        """
+        mo_kwargs = {}
         for k, v in serialized.items():
-            dc_kwargs[k] = self.serializer.deserialize(v)
+            mo_kwargs[k] = self.serializer.deserialize(v)
 
-        return cls(**dc_kwargs)
+        # Create a new ModelOutput instance by passing the same kwargs
+        model_output_instance = self.data_type(**mo_kwargs)
+
+        return model_output_instance
+
+
+def test_transformers_plugin(tmp_path):
+    """Test an example plugin."""
+    config = BertConfig()
+    model = BertModel(config)
+    test_input_ids = torch.tensor([[0] * 128])
+    test_output = model(test_input_ids)
+
+    test_filepath = tmp_path / "test.safestructures"
+    save_file(test_output, test_filepath, plugins=[BertModelOutputProcessor])
+
+    deserialized = load_file(test_filepath, plugins=[BertModelOutputProcessor])
+    assert isinstance(deserialized, BaseModelOutputWithPoolingAndCrossAttentions)
+
+    compare_values(test_output, deserialized)
