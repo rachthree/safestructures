@@ -10,7 +10,7 @@ from safestructures.processors.iterable import DataclassProcessor
 
 
 class BertModelOutputProcessor(DataclassProcessor):
-    """Processor for transformer's ModelOutput class."""
+    """Processor for BaseModelOutputWithPoolingAndCrossAttentions."""
 
     data_type = BaseModelOutputWithPoolingAndCrossAttentions
 
@@ -19,7 +19,7 @@ class BertModelOutputProcessor(DataclassProcessor):
     ) -> BaseModelOutputWithPoolingAndCrossAttentions:
         """Overload DataclassProcessor.deserialize.
 
-        This is so the proper BertModelOutput is provided.
+        This is so the proper BERT model output is provided.
         """
         mo_kwargs = {}
         for k, v in serialized.items():
