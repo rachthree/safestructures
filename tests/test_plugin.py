@@ -25,7 +25,6 @@ class BertModelOutputProcessor(DataclassProcessor):
         for k, v in serialized.items():
             mo_kwargs[k] = self.serializer.deserialize(v)
 
-        # Create a new ModelOutput instance by passing the same kwargs
         model_output_instance = self.data_type(**mo_kwargs)
 
         return model_output_instance
