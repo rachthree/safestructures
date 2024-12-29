@@ -1,4 +1,5 @@
 """Test `Serializer`."""
+
 import json
 from unittest import mock
 
@@ -7,6 +8,7 @@ import pytest
 import torch
 from safetensors import safe_open
 from safetensors.numpy import save_file
+from tensorflow.python.framework.ops import EagerTensor
 
 from safestructures.constants import (
     SCHEMA_FIELD,
@@ -25,6 +27,7 @@ MOCK_DEFAULT_PROCESS_MAP = {
 FRAMEWORK_TENSOR_TYPE_MAP = {
     "np": np.ndarray,
     "pt": torch.Tensor,
+    "tf": EagerTensor,
 }
 
 
@@ -164,7 +167,7 @@ class TestSerializer:
         assert metadata[SCHEMA_FIELD] == json.dumps(mock_schema)
         assert metadata[VERSION_FIELD] == SCHEMA_VERSION
 
-    @pytest.mark.parametrize("framework", ["np", "pt"])
+    @pytest.mark.parametrize("framework", FRAMEWORK_TENSOR_TYPE_MAP.keys())
     def test_load(self, tmp_path, framework):
         """Test `Serialize.load`."""
         mock_schema = {TYPE_FIELD: "mock_type", VALUE_FIELD: "mock_value"}

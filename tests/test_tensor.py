@@ -12,6 +12,8 @@ from safestructures.processors.base import TensorProcessor
 from safestructures.processors.tensor import NumpyProcessor, TFProcessor, TorchProcessor
 from safestructures.serializer import Serializer
 
+PROCESSOR_CLS_LIST = [NumpyProcessor, TorchProcessor, TFProcessor]
+
 
 @pytest.fixture
 def mock_serializer():
@@ -130,7 +132,7 @@ def test_serialize_tensor(
         is_equal_fn(mock_serializer.tensors[_expected_id], test_tensors[i])
 
 
-@pytest.mark.parametrize("processor_cls", [NumpyProcessor, TorchProcessor, TFProcessor])
+@pytest.mark.parametrize("processor_cls", PROCESSOR_CLS_LIST)
 def test_deserialize_tensor(mock_serializer, processor_cls: TensorProcessor):
     """Test tensor processor deserialization."""
     test_tensors = []
