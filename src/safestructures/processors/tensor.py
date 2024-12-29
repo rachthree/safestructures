@@ -59,3 +59,32 @@ if is_available("tensorflow"):
         def to_numpy(self, tensor: EagerTensor) -> np.ndarray:
             """Overload `TensorProcessor.to_numpy`."""
             return tensor.numpy()
+
+
+if is_available("jax"):
+    import jax
+    import jax.numpy as jnp
+    from jaxlib.xla_extension import ArrayImpl
+
+    cpus = jax.devices("cpu")
+    cpu_device = cpus[0]
+
+    class JaxProcessor(TensorProcessor):
+        """TensorFlow tensor processor."""
+
+        data_type = ArrayImpl
+
+        def to_cpu(self, tensor: ArrayImpl) -> ArrayImpl:
+            """Overload `TensorProcessor.to_cpu`."""
+            tensor = jnp.copy(tensor)
+            dtype = tensor.dtype
+            if jnp.issubdtype(tensor.dtype, jnp.floating):
+                dtype = jnp.float32
+                tensor = tensor.astype(dtype)
+
+            tensor = jax.device_put(tensor, device=cpu_device)
+            return tensor
+
+        def to_numpy(self, tensor: ArrayImpl) -> np.ndarray:
+            """Overload `TensorProcessor.to_numpy`."""
+            return np.asarray(tensor)
