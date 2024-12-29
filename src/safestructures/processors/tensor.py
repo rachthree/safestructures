@@ -51,9 +51,15 @@ if is_available("tensorflow"):
 
         def to_cpu(self, tensor: EagerTensor) -> EagerTensor:
             """Overload `TensorProcessor.to_cpu`."""
-            if tensor.device != "CPU:0":
+            dtype = tensor.dtype
+            if dtype.is_floating:
+                dtype = tf.float32
+                tensor = tf.cast(tensor, dtype=dtype)
+
+            if "CPU:0" not in tensor.device:
                 with tf.device("CPU:0"):
                     tensor = tf.identity(tensor)
+
             return tensor
 
         def to_numpy(self, tensor: EagerTensor) -> np.ndarray:
