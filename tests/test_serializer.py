@@ -3,6 +3,7 @@
 import json
 from unittest import mock
 
+import jax
 import numpy as np
 import pytest
 import torch
@@ -28,6 +29,7 @@ FRAMEWORK_TENSOR_TYPE_MAP = {
     "np": np.ndarray,
     "pt": torch.Tensor,
     "tf": EagerTensor,
+    "jax": jax.Array,
 }
 
 

@@ -4,10 +4,13 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Callable, Union
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
 import tensorflow as tf
 import torch
+from jaxlib.xla_extension import ArrayImpl
 from tensorflow.python.framework.ops import EagerTensor
 from utils import compare_nested_schemas, compare_values
 
@@ -15,7 +18,7 @@ from safestructures import load_file, save_file
 from safestructures.constants import KEYS_FIELD, Mode, TYPE_FIELD, VALUE_FIELD
 from safestructures.serializer import Serializer
 
-FRAMEWORKS = ["np", "pt", "tf"]
+FRAMEWORKS = ["np", "pt", "tf", "jax"]
 
 
 @dataclass
@@ -23,7 +26,7 @@ class _TestDC:
     name: str
     midichlorian_count: int
     chosen_one: bool
-    force_tensor: Union[np.array, torch.Tensor, EagerTensor] = None
+    force_tensor: Union[np.array, torch.Tensor, EagerTensor, ArrayImpl] = None
 
 
 TEST_INPUT = [
@@ -260,19 +263,28 @@ def generate_test_with_tensors(
     return test_input, expected_schema, native_tensor_fn
 
 
+RAND_SHAPE = (4, 3, 128, 128)
+
+
 def generate_numpy_tensor():
     """Generate a random numpy tensor."""
-    return np.random.rand(4, 3, 128, 128)
+    return np.random.rand(*RAND_SHAPE)
 
 
 def generate_torch_tensor():
     """Generate a random torch tensor."""
-    return torch.randn(4, 3, 128, 128)
+    return torch.randn(*RAND_SHAPE)
 
 
 def generate_tf_tensor():
     """Generate a random tf tensor."""
-    return tf.random.uniform(shape=(4, 3, 128, 128))
+    return tf.random.uniform(shape=RAND_SHAPE)
+
+
+def generate_jax_tensor():
+    """Generate a random jax tensor."""
+    key = jax.random.PRNGKey(42)
+    return jax.random.uniform(key, shape=RAND_SHAPE)
 
 
 TEST_CASES = [
@@ -285,6 +297,11 @@ TEST_CASES = [
         generate_tf_tensor,
         "tensorflow.python.framework.ops.EagerTensor",
         lambda x: tf.convert_to_tensor(x),
+    ),
+    generate_test_with_tensors(
+        generate_jax_tensor,
+        "jaxlib.xla_extension.ArrayImpl",
+        lambda x: jnp.array(x),
     ),
 ]
 

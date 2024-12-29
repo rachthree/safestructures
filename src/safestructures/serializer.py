@@ -1,4 +1,5 @@
 """Main serialization utility."""
+
 import builtins
 import importlib
 import json
@@ -19,7 +20,7 @@ from safestructures.constants import (
     TYPE_FIELD,
     VERSION_FIELD,
 )
-from safestructures.defaults import DEFAULT_PROCESS_MAP
+from safestructures.defaults import DEFAULT_PROCESS_MAP, register_processor
 from safestructures.processors.base import DataProcessor
 from safestructures.processors.iterable import SafestructuresDataclass
 
@@ -36,7 +37,7 @@ class Serializer:
         if plugins:
             for p in plugins:
                 self._check_plugin(p)
-                self.process_map[p.data_type] = p
+                register_processor(self.process_map, p)
 
         self.mode: Optional[Mode] = None
 

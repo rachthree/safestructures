@@ -4,9 +4,12 @@ from copy import deepcopy
 from dataclasses import fields, is_dataclass
 from typing import Union
 
+import jax
+import jax.numpy as jnp
 import numpy as np
 import tensorflow as tf
 import torch
+from jaxlib.xla_extension import ArrayImpl
 from tensorflow.python.framework.ops import EagerTensor
 
 from safestructures.constants import KEYS_FIELD, TYPE_FIELD, VALUE_FIELD
@@ -117,6 +120,8 @@ NP2F_MAP = {
     torch.Tensor: torch.from_numpy,
     tf.Tensor: tf.convert_to_tensor,
     EagerTensor: tf.convert_to_tensor,
+    jax.Array: jnp.array,
+    ArrayImpl: jnp.array,
 }
 
 F2NP_MAP = {
@@ -124,6 +129,8 @@ F2NP_MAP = {
     torch.Tensor: lambda x: x.numpy(),
     tf.Tensor: lambda x: x.numpy(),
     EagerTensor: lambda x: x.numpy(),
+    jax.Array: lambda x: np.asarray(x),
+    ArrayImpl: lambda x: np.asarray(x),
 }
 
 ASSERT_EQUAL_MAP = {
@@ -131,6 +138,8 @@ ASSERT_EQUAL_MAP = {
     torch.Tensor: torch.testing.assert_close,
     tf.Tensor: _assert_tf_equal,
     EagerTensor: _assert_tf_equal,
+    jax.Array: jnp.array_equal,
+    ArrayImpl: jnp.array_equal,
 }
 
 FRAMEWORK_TENSORS = tuple(NP2F_MAP.keys())
