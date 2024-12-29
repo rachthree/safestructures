@@ -76,7 +76,7 @@ if is_available("jax"):
     cpu_device = cpus[0]
 
     class JaxProcessor(TensorProcessor):
-        """TensorFlow tensor processor."""
+        """JAX array processor."""
 
         data_type = ArrayImpl
 
