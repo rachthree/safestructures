@@ -46,9 +46,9 @@ test = [
 ]
 docs = [
   "mkdocs",
-  "mkdocs-material",
   "mkdocs-git-revision-date-localized-plugin",
   "mkdocstrings[python]",
+  "pymdown-extensions",
 ]
 
 [project.urls]

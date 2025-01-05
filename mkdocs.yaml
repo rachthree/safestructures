@@ -16,6 +16,8 @@ markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
+  - pymdownx.snippets:
+      check_paths: true
 
 plugins:
   - search:
@@ -32,14 +34,14 @@ extra:
       link: https://github.com/rachthree
 
 nav:
-  - Home: index.md
-  - Requirements: requirements.md
+  - Home: home.md
   - Installation: installation.md
   - Usage: usage.md
-  - Why safestructures?: why_safestructures.md
+  - Plugins: plugins_guide.md
   - Examples: examples.md
   - Reference:
-      - safejax.core.load: api/core_load.md
-      - safejax.core.save: api/core_save.md
-      - safejax.utils: api/utils.md
+      - safestructures.save_file: api/save_file.md
+      - safestructures.load_file: api/load_file.md
+      - safestructures.DataProcessor: api/dataprocessor.md
+      - safestructures.TensorProcessor: api/tensorprocessor.md
   - License: license.md
