@@ -6,7 +6,7 @@ site_description: Serialize general data structures with `safetensors`
 repo_name: rachthree/safestructures
 repo_url: https://github.com/rachthree/safestructures
 
-copyright: Copyright (c) 2024-present Craig Chan
+copyright: Copyright (c) 2024-Present Craig Chan
 
 theme:
   name: readthedocs
