@@ -1,2 +1,2 @@
 # safestructures
-Safetensors-based serializaion for general data structures
+Safetensors-based serialization for general data structures
