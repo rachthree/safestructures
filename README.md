@@ -13,6 +13,22 @@ ML models in practice deal with more than just tensors. Tensors can be passed be
 To have better reproducibility and tracking, we may need to store and load model inputs and outputs, as well as intermediate layer inputs and output in a safe manner. `safetensors` greatly helps on the tensor side, while `safestructures` helps with the rest.
 
 
+## Installation and requirements
+`safestructures` requires Python 3.10 and above.
+
+To install, simply run
+```
+pip install safestructures
+```
+ This will also install the minimum dependencies, namely `safetensors` and `numpy`.
+
+As for ML / tensor frameworks, `safestructures` expects `numpy` at minimum. To use `safestructures`'s PyTorch, TensorFlow, and JAX capabilities, the respective framework must be installed separately.
+
+
+## Usage and plugins
+See the [usage](./docs/usage.md) and [plugins guide](./docs/plugins_guide.md) readmes, or refer to [the docs](https://rachthree.github.io/safestructures)
+
+
 ## Support
 Currently, `safestructures` supports all of Python's core data containers and data types, including `dataclass`. Additionally, it supports saving PyTorch, TensorFlow 2, and JAX tensors via `safetensors`. It aims to cover the same frameworks as `safetensors`, but out of the box for initial release it does not support:
 
