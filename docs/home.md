@@ -21,10 +21,12 @@ Currently, `safestructures` supports out of the box:
 * TensorFlow 2 tensors via `safetensors`
 * JAX tensors via `safetensors`.
 
+For maximum compatibility with NumPy, **all float tensors are stored in FP32**.
+
 `safestructures` aims to cover the same frameworks as `safetensors`, but for initial release it does not support:
 
 * `collections` - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/12) to request support.
 * PaddlePaddle - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/10) to request support.
 * MLX - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/9) to request support.
 
-In the interim, `safestructures` supports [plugins](./plugins_guide.md) in case there is a type it does not support.
+However, `safestructures` supports [plugins](./plugins_guide.md) in case there is a type it does not support.
