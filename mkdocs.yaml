@@ -9,12 +9,15 @@ repo_url: https://github.com/rachthree/safestructures
 copyright: Copyright (c) 2024-Present Craig Chan
 
 theme:
-  name: readthedocs
+  name: material
 
 
 markdown_extensions:
+  - admonition
   - pymdownx.highlight:
       anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
   - pymdownx.superfences
   - pymdownx.snippets:
       check_paths: true

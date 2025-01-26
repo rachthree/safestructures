@@ -13,8 +13,18 @@ ML models in practice deal with more than just tensors. Tensors can be passed be
 To have better reproducibility and tracking, we may need to store and load model inputs and outputs, as well as intermediate layer inputs and output in a safe manner. `safetensors` greatly helps on the tensor side, while `safestructures` helps with the rest.
 
 ## Support
-Currently, `safestructures` supports all of Python's core data containers and data types, including `dataclass`. Additionally, it supports saving PyTorch, TensorFlow 2, and JAX tensors via `safetensors`. It aims to cover the same frameworks as `safetensors`, but out of the box for initial release it does not support:
+Currently, `safestructures` supports out of the box:
+
+* All of Python's built-in data containers and data types.
+* `dataclass`es.
+* PyTorch tensors via `safetensors`
+* TensorFlow 2 tensors via `safetensors`
+* JAX tensors via `safetensors`.
+
+`safestructures` aims to cover the same frameworks as `safetensors`, but for initial release it does not support:
 
 * `collections` - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/12) to request support.
 * PaddlePaddle - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/10) to request support.
 * MLX - Please comment on [this issue](https://github.com/rachthree/safestructures/issues/9) to request support.
+
+In the interim, `safestructures` supports [plugins](./plugins_guide.md) in case there is a type it does not support.
