@@ -85,16 +85,92 @@ An example would be the core `DictProcessor`:
 ## Tensors
 `TensorProcessor` is a special `DataProcessor`.
 The `serialize` and `deserialize` methods do not need to be overloaded for a subclass / plugin,
-but there are still 3 main steps:
+but there are still 2 main steps:
 
 1. Define `MyTensorProcessor.data_type`, a class attribute.
     * This would be the tensor class of the ML framework.
-2. Implement `MyTensorProcessor.to_cpu`, a processing method to send the tensor to CPU.
-    * Input:
-    * Returns:
-3. Implement `MyTensorProcessor.to_numpy`, a processing method to convert to NumPy.
-    * Input:
-    * Returns:
+2. Implement `MyTensorProcessor.to_numpy`, a processing method to convert to NumPy.
+    * Input: The ML framework tensor.
+    * Returns: The tensor as a `numpy.ndarray`. The implementation should:
+        * Provide a contiguous array.
+        * Be casted to FP32 for float tensors for maximum compatibility.
 
+
+An example would be the core `TorchProcessor`:
+::: safestructures.processors.tensor.TorchProcessor
+    handler: python
+    options:
+        show_bases: false
+        show_source: true
+        show_docstring_description: false
+        members: false
 
 ## Containers
+Processors for containers such as lists and dictionaries are still `DataProcessor` subclasses but are recursive in nature.
+`safestructures` uses recursion to traverse a data structure.
+Unless there are values that are needed to be serialized at the container level, such as dictionary keys,
+no actual values are serialized/deserialized once the container object is reached.
+A `DataProcessor` for a container merely iterates through the object and uses `self.serializer.serialize` or `self.serializer.deserialize` to further serialize or deserialize child values, respectively.
+
+Implementing a `DataProcessor` subclass to handle your custom container class follows the same steps as
+for [basic types](#basic-types), but with the following extra considerations:
+
+1. The `DataProcessor.serialize` method must use `self.serializer.serialize` to further serialize as you iterate through the values in the container.
+    * Input: The data container to serialize.
+    * Output: Must be a `builtin` container. Consider what `builtin` container (such as `dict` or `list`) what best fits your custom container class.
+    For example, `safestructures` uses `dict` to help serialize `dataclasses.dataclass` objects.
+2. The `DataProcessor.deserialize` method must use `self.serializer.deserialize` to further deserialize as you iterate through the values in a `builtin` serialized container.
+    * Input: A `builtin` container with serialized values.
+    For example, an object that used a dictionary to serialize would have a `dict` provided to `DataProcessor.deserialize`, and a list/tuple/set-like object would have a `list` provided to `DataProcessor.deserialize`.
+    * Output: The deserialized custom object.
+
+The `DictProcessor` implementation [above](#optional-storing-other-metadata-to-aid-in-deserialization) is a good example of these concepts, while also exercising `DataProcessor.serialize_extra` to handle other values that require serialization at the container level.
+
+In `safestructures`, the core container processors are iterable in nature, so all are in the `safestructures.processor.iterable` submodule:
+
+* `ListProcessor`
+* `SetProcessor`
+* `TupleProcessor`
+* `DictProcessor`
+* `DataclassProcessor`
+
+For example, let's create a plugin for a `transformers.modeling_outputs.ModelOutput` objects.
+Since `ModelOutput` objects are similar to `dataclasses.dataclass` objects, we'll subclass `safestructures.processors.iterable.DataclassProcessor`
+
+```python
+from safestructures.processors.iterable import DataclassProcessor
+
+class ModelOutputProcessor(DataclassProcessor):
+    """Processor for `transformers`'s ModelOutput."""
+
+    data_type = ModelOutput
+
+    def deserialize(self, serialized: dict, **kwargs) -> ModelOutput:
+        """Overload DataclassProcessor.deserialize.
+
+        This is so the proper ModelOutput is provided.
+        """
+        mo_kwargs = {}
+        for k, v in serialized.items():
+            mo_kwargs[k] = self.serializer.deserialize(v)
+
+        model_output_instance = self.data_type(**mo_kwargs)
+
+        return model_output_instance
+```
+
+Since most `ModelOutput` objects from a `transformers` model are subclasses, we can just subclass `ModelOutputProcessor` like below:
+```python
+from transformers.modeling_outputs import BaseModelOutputWithPastAndCrossAttentions BaseModelOutputWithPoolingAndCrossAttentions
+
+class BertOutputProcessor(ModelOutputProcessor):
+    """Processor for BERT model outputs."""
+
+    data_type = BaseModelOutputWithPoolingAndCrossAttentions
+
+
+class BertEncoderOutputProcessor(ModelOutputProcessor):
+    """Processor for BERT encoder outputs."""
+
+    data_type = BaseModelOutputWithPastAndCrossAttentions
+```
