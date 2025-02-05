@@ -37,7 +37,7 @@ extra:
       link: https://github.com/rachthree
 
 nav:
-  - Home: home.md
+  - Home: index.md
   - Installation: installation.md
   - Usage: usage.md
   - Plugins: plugins_guide.md
