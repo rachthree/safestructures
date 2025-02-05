@@ -16,14 +16,10 @@ class IOHook:
         self.save_dir = save_dir
 
     def __call__(self, module, inputs, outputs):
-        input_save_file = (
-            self.save_dir
-            / f"{self.layer_name}_inputs_{self.times_called}.safestructures"
-        )
-        output_save_file = (
-            self.save_dir
-            / f"{self.layer_name}_outputs_{self.times_called}.safestructures"
-        )
+        input_filename = f"{self.layer_name}_inputs_{self.times_called}.safestructures"
+        output_filename = f"{self.layer_name}_outputs_{self.times_called}.safestructures"
+        input_save_file = self.save_dir / input_filename
+        output_save_file = self.save_dir / output_filename
         save_file(inputs, input_save_file)
         save_file(outputs, output_save_file)
 ```
