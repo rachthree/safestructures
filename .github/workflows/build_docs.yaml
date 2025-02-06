@@ -1,0 +1,21 @@
+name: Build and Deploy Docs
+on:
+  workflow_call:
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.10
+
+    steps:
+      - name: Get safestructures
+        uses: actions/checkout@v4
+
+      - name: Install safestructures with docs dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Deploy to Github pages
+        run: mkdocs gh-deploy --force
