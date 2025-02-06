@@ -34,21 +34,21 @@ jobs:
       - name: Test safestructures
         run: pytest tests
 
-  deploy-docs:
-    needs: pytest
+  # deploy-docs:
+  #   needs: pytest
 
-    runs-on: ubuntu-latest
-    container:
-      image: python:3.10
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: python:3.10
 
-    steps:
-      - name: Get safestructures
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Get safestructures
+  #       uses: actions/checkout@v4
 
-      - name: Install safestructures with docs dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -e ".[docs]"
+  #     - name: Install safestructures with docs dependencies
+  #       run: |
+  #         pip install --upgrade pip
+  #         pip install -e ".[docs]"
 
-      - name: deploy-to-gh-pages
-        run: mkdocs gh-deploy --force
+  #     - name: deploy-to-gh-pages
+  #       run: mkdocs gh-deploy --force
