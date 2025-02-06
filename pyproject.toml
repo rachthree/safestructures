@@ -40,6 +40,7 @@ dev = ["pre-commit"]
 test = [
     "pytest",
     "torch",
+    "torchvision",
     "tensorflow",
     "tensorflow-hooks",
     "flax",
