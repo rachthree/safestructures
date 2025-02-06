@@ -1,0 +1,51 @@
+name: Release Actions
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  ci-tests:
+    name: Run CI tests
+    uses: .github/workflows/ci_tests.yaml
+
+  deploy-docs:
+    name: Deploy docs
+    needs: ci-tests
+    uses: .github/workflows/build_docs.yaml
+
+  release:
+    name: Build and release pip package
+    needs: deploy-docs
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Get safestructures
+      uses: actions/checkout@master
+    - name: Setup
+      run: |
+        pip install wheel build twine
+    - name: Build distribution
+      run: |
+        python -m build
+    - name: Create pre-release draft
+      uses: softprops/action-gh-release@v0.1.14
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        name: Release ${{ github.ref_name }}
+        draft: true
+        prerelease: true
+        files: |
+          ${{github.workspace}}/dist/*
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_TEST }}
+      run: |
+        twine upload -r testpypi dist/*
