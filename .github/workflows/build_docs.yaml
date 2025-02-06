@@ -17,9 +17,10 @@ jobs:
 
       - name: Checkout github pages repo
         uses: actions/checkout@v5
-        repository: rachthree/rachthree.github.io
-        path: github-pages
-        token: ${{ secrets.PAGES_TOKEN }}
+        with:
+          repository: rachthree/rachthree.github.io
+          path: github-pages
+          token: ${{ secrets.PAGES_TOKEN }}
 
       - name: Install safestructures with docs dependencies
         run: |
