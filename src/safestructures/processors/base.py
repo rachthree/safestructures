@@ -1,4 +1,5 @@
 """Base classes for plugins."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -161,18 +162,6 @@ class TensorProcessor(DataProcessor, ABC):
     """Base class to process tensors."""
 
     @abstractmethod
-    def to_cpu(self, tensor: Any) -> Any:
-        """Move tensor to CPU.
-
-        Args:
-            tensor (Any): The tensor to send to CPU.
-
-        Returns:
-            The tensor on CPU.
-        """
-        pass
-
-    @abstractmethod
     def to_numpy(self, tensor: Any) -> np.ndarray:
         """Convert tensor to Numpy array.
 
@@ -200,7 +189,6 @@ class TensorProcessor(DataProcessor, ABC):
 
     def serialize(self, tensor: Any) -> dict:
         """Overload `DataProcessor.serialize`."""
-        tensor = self.to_cpu(tensor)
         tensor = self.to_numpy(tensor)
         return self.process_tensor(tensor)
 

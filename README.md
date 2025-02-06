@@ -5,7 +5,7 @@
 
 `safetensors` can be more preferred than `pickle` when saving tensors, especially for safety reasons. See [huggingface/safetensors](https://github.com/huggingface/safetensors) for more details.
 
-`safetensors` only stores tensors. `safestructures` extends `safetensors` by storing information of the original data structure containing tensors as well as other data types. It utilities a [plugin architecture](./plugins_guide.md) so that projects that contain custom types can serialize and deserialize their custom data.
+`safetensors` only stores tensors. `safestructures` extends `safetensors` by storing information of the original data structure containing tensors as well as other data types. It utilities a [plugin architecture](./docs/plugins_guide.md) so that projects that contain custom types can serialize and deserialize their custom data.
 
 ## Why safestructures?
 ML models in practice deal with more than just tensors. Tensors can be passed between layers or outputted using data containers. Other data types are used as well to modify layer behavior.
