@@ -15,10 +15,29 @@ jobs:
       - name: Get safestructures
         uses: actions/checkout@v4
 
+      - name: Checkout github pages repo
+        uses: actions/checkout@v5
+        repository: rachthree/rachthree.github.io
+        path: github-pages
+        token: ${{ secrets.PAGES_TOKEN }}
+
       - name: Install safestructures with docs dependencies
         run: |
           pip install --upgrade pip
           pip install -e ".[docs]"
 
-      - name: Deploy to Github pages
-        run: mkdocs gh-deploy --force
+      - name: Build MkDocs Site
+        run: |
+          mkdocs build --site-dir site
+
+      - name: Deploy to github pages repo
+        run: |
+          rm -rf github-pages/docs/safestructures
+          mkdir -p github-pages/docs/safestructures
+          cp -r site/* github-pages/docs/safestructures
+          cd github-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/safestructures
+          git commit -m "Deploy updated safestructures mkdocs site" || echo "No changes to commit"
+          git push origin main
