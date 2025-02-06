@@ -17,6 +17,8 @@ save_file(data, save_path)
     `safestructures` treats `dataclass` objects as a special case. The original class will be used when deserializing, but by default a dataclass specific to `safestructures` will be used restore the object
     unless a plugin is used.
 
+Go [here](./examples.md) to see more examples.
+
 ### Saving additional metadata
 Metadata can be saved using the `metadata` keyword argument with `save_file`. It accepts a flattened dictionary of key type `str`, value type `str`, as that is what `safetensors` accepts.
 
@@ -30,8 +32,6 @@ file_path = "path/to/load/obj.safestructures"
 with safe_open(load_path) as f:
     metadata = f.metadata()
 ```
-
-Go [here](./examples.md) to see more examples.
 
 ## Loading / deserializing
 To load a Python object, simply use:

@@ -11,7 +11,8 @@ These are based on two main classes: `safestructures.DataProcessor` and `safestr
 `TensorProcessor` is a special subclass of `DataProcessor`, utilizing `safetensors`'s capabilities to serialize and deserialize [tensors](#tensors).
 
 ## Basic types
-Basic types, such as `str`, `int`, `float`, etc. uses subclasses of `DataProcessor`.
+Basic types, such as `str`, `int`, `float`, etc. use subclasses of `DataProcessor`.
+These are considered as "atomic" data types, the base case where no further serialization is needed.
 If you have a custom atomic data type, especially one that is not covered by core `safestructures` capabilities,
 then you would subclass `DataProcessor` (called `MyTypeProcessor` below for example) and follow 3 main steps:
 
@@ -46,7 +47,7 @@ class MyTypeProcessor(DataProcessor):
         return MyCustomType(int(serialized))
 ```
 
-You can then serialize your object or a data container with your object by using the `plugins` keyword argument with `save_file` and `load_file`:
+You can then serialize your object or a data container containing your object by using the `plugins` keyword argument with `save_file` and `load_file`:
 
 ```python
 from safestructures import save_file, load_file
@@ -80,7 +81,7 @@ An example would be the core `DictProcessor`:
         members: false
 
 !!! info "Note"
-    `DictProcessor` is a container plugin. See the [Containers section](#containers) for details on what makes a container plugin.
+    `DictProcessor` is a container plugin. See the [Containers section](#containers) for details on container plugins.
 
 ## Tensors
 `TensorProcessor` is a special `DataProcessor`.
@@ -117,7 +118,7 @@ for [basic types](#basic-types), but with the following extra considerations:
 
 1. The `DataProcessor.serialize` method must use `self.serializer.serialize` to further serialize as you iterate through the values in the container.
     * Input: The data container to serialize.
-    * Output: Must be a `builtin` container. Consider what `builtin` container (such as `dict` or `list`) what best fits your custom container class.
+    * Output: Must be a `builtin` container. Consider what `builtin` container (such as `dict` or `list`) best fits your custom container class.
     For example, `safestructures` uses `dict` to help serialize `dataclasses.dataclass` objects.
 2. The `DataProcessor.deserialize` method must use `self.serializer.deserialize` to further deserialize as you iterate through the values in a `builtin` serialized container.
     * Input: A `builtin` container with serialized values.
@@ -134,7 +135,7 @@ In `safestructures`, the core container processors are iterable in nature, so al
 * `DictProcessor`
 * `DataclassProcessor`
 
-For example, let's create a plugin for a `transformers.modeling_outputs.ModelOutput` objects.
+For example, let's create a plugin for `transformers.modeling_outputs.ModelOutput` objects.
 Since `ModelOutput` objects are similar to `dataclasses.dataclass` objects, we'll subclass `safestructures.processors.iterable.DataclassProcessor`
 
 ```python
@@ -173,4 +174,31 @@ class BertEncoderOutputProcessor(ModelOutputProcessor):
     """Processor for BERT encoder outputs."""
 
     data_type = BaseModelOutputWithPastAndCrossAttentions
+```
+
+We can then serialize outputs of the model. Below is a PyTorch-based example:
+```python
+from transformers import BertConfig, BertModel
+
+config = BertConfig()
+model = BertModel(config)
+test_plugins = [BertOutputProcessor, BertEncoderOutputProcessor]
+
+results = {}
+
+def _store_encoder_output(module, args, kwargs, output):
+    results["encoder_output"] = output
+    return output
+
+model.encoder.register_forward_hook(_store_encoder_output, with_kwargs=True)
+
+test_input_ids = torch.tensor([[0] * 128])
+test_output = model(test_input_ids)
+
+results["model_output"] = test_output
+
+test_filepath = tmp_path / "test.safestructures"
+save_file(results, test_filepath, plugins=test_plugins)
+
+deserialized = load_file(test_filepath, plugins=test_plugins)
 ```
