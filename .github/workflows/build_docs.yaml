@@ -5,10 +5,13 @@ on:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.10
 
     steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
       - name: Get safestructures
         uses: actions/checkout@v4
 
