@@ -1,0 +1,2 @@
+::: safestructures.DataProcessor
+    handler: python

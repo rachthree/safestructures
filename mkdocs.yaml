@@ -1,0 +1,50 @@
+site_name: safestructures
+site_url: https://github.com/rachthree/safestructures
+site_author: Craig Chan
+site_description: Serialize general data structures with `safetensors`
+
+repo_name: rachthree/safestructures
+repo_url: https://github.com/rachthree/safestructures
+
+copyright: Copyright (c) 2024-Present Craig Chan
+
+theme:
+  name: material
+
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      check_paths: true
+
+plugins:
+  - search:
+  - git-revision-date-localized:
+      type: timeago
+      enable_creation_date: true
+  - mkdocstrings:
+
+extra:
+  social:
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/safestructures/
+    - icon: fontawesome/brands/github
+      link: https://github.com/rachthree
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Plugins: plugins_guide.md
+  - Examples: examples.md
+  - Reference:
+      - safestructures.save_file: api/save_file.md
+      - safestructures.load_file: api/load_file.md
+      - safestructures.DataProcessor: api/dataprocessor.md
+      - safestructures.TensorProcessor: api/tensorprocessor.md
+  - License: license.md

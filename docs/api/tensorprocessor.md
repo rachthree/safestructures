@@ -1,0 +1,2 @@
+::: safestructures.TensorProcessor
+    handler: python

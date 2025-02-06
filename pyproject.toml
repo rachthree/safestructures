@@ -37,8 +37,21 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pre-commit"]
-test = ["pytest", "torch", "tensorflow", "flax", "paddlepaddle", "transformers"]
-
+test = [
+    "pytest",
+    "torch",
+    "torchvision",
+    "tensorflow",
+    "tensorflow-hooks",
+    "flax",
+    "transformers",
+]
+docs = [
+  "mkdocs-material",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocstrings[python]",
+  "pymdown-extensions",
+]
 
 [project.urls]
 Homepage = "https://github.com/rachthree/safestructures"
@@ -47,7 +60,7 @@ Homepage = "https://github.com/rachthree/safestructures"
 where = ["src"]
 
 [tool.isort]
-known_third_party = ["safetensors", "numpy", "torch", "tensorflow", "flax", "paddlepaddle"]
+known_third_party = ["safetensors", "numpy", "torch", "tensorflow", "flax"]
 known_first_party = ["safestructures"]
 profile = "black"
 default_section = "THIRDPARTY"
