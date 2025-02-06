@@ -8,12 +8,12 @@ on:
 jobs:
   ci-tests:
     name: Run CI tests
-    uses: .github/workflows/ci_tests.yaml
+    uses: ./.github/workflows/ci_tests.yaml
 
   deploy-docs:
     name: Deploy docs
     needs: ci-tests
-    uses: .github/workflows/build_docs.yaml
+    uses: ./.github/workflows/build_docs.yaml
 
   release:
     name: Build and release pip package
