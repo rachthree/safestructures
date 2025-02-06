@@ -7,7 +7,7 @@ from safestructures.utils.module import is_available
 
 
 class NumpyProcessor(TensorProcessor):
-    """Numpy array processor."""
+    """NumPy array processor."""
 
     data_type = np.ndarray
 
@@ -20,7 +20,7 @@ if is_available("torch"):
     import torch
 
     class TorchProcessor(TensorProcessor):
-        """Pytorch tensor processor."""
+        """PyTorch tensor processor."""
 
         data_type = torch.Tensor
 
