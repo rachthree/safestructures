@@ -14,7 +14,7 @@ save_file(data, save_path)
 ```
 
 !!! note "Note about Dataclasses"
-    `safestructures` treats `dataclass` objects as a special case. The original class will be used when deserializing, but by default a dataclass specific to `safestructures` will be used restore the object
+    `safestructures` treats `dataclass` objects as a special case. The original class will be used when serializing, but by default a dataclass specific to `safestructures` will be used restore the object
     unless a plugin is used.
 
 Go [here](./examples.md) to see more examples.
