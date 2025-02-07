@@ -9,6 +9,7 @@ on:
       - main
       - release/**
   workflow_call:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
