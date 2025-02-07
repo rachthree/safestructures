@@ -14,6 +14,7 @@ jobs:
     name: Deploy docs
     needs: ci-tests
     uses: ./.github/workflows/build_docs.yaml
+    secrets: inherit
 
   release:
     name: Build and release pip package
