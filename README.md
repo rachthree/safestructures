@@ -8,9 +8,9 @@
 `safetensors` only stores tensors. `safestructures` extends `safetensors` by storing information of the original data structure containing tensors as well as other data types. It utilizes a [plugin architecture](./docs/plugins_guide.md) so that projects that contain custom types can serialize and deserialize their custom data.
 
 ## Why safestructures?
-ML models in practice deal with more than just tensors. Tensors can be passed between layers or outputted using data containers. Other data types are used as well to modify layer behavior.
+ML models in practice use more than just tensors. Tensors, data containers with tensors, and other data types can be passed between or outputted from layers. In model code, there can be a whole mix of input and output types for usability and to change model behavior.
 
-To have better reproducibility and tracking, we may need to store and load model inputs and outputs, as well as intermediate layer inputs and output in a safe manner. `safetensors` greatly helps on the tensor side, while `safestructures` helps with the rest.
+To have better reproducibility and tracking, we may need to store and load inputs and outputs of models and their intermediate layers in a safe manner. `safetensors` greatly helps on the tensor side, while `safestructures` helps with the rest.
 
 
 ## Installation and requirements
