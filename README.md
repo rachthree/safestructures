@@ -1,7 +1,7 @@
 # safestructures
 
 ## What is safestructures?
-`safestructures` is a Python package based on `safetensors` to serialize general data structures. It uses `safetensors` to store tensors and uses its metadata to store the schema of the original data structure as well as other basic data types.
+`safestructures` is a Python package that extends `safetensors` to serialize general data structures containing tensors and other data types. It uses `safetensors` to store tensors and uses its metadata to store the schema of the original data structure as well as other basic data types.
 
 `safetensors` can be more preferred than `pickle` when saving tensors, especially for safety reasons. See [huggingface/safetensors](https://github.com/huggingface/safetensors) for more details.
 
