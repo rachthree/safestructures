@@ -26,7 +26,7 @@ As for ML / tensor frameworks, `safestructures` expects `numpy` at minimum. To u
 
 
 ## Usage and plugins
-See the [usage](./docs/usage.md) and [plugins guide](./docs/plugins_guide.md) readmes, or refer to [the docs](https://rachthree.github.io/safestructures)
+See the [usage](./docs/usage.md) and [plugins guide](./docs/plugins_guide.md) readmes, or refer to [the docs](https://rachthree.github.io/docs/safestructures/)
 
 
 ## Support
