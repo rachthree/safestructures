@@ -21,6 +21,7 @@ from safestructures.constants import (
     VERSION_FIELD,
 )
 from safestructures.defaults import DEFAULT_PROCESS_MAP, register_processor
+from safestructures.graph import GraphSerializer
 from safestructures.processors.base import DataProcessor
 from safestructures.processors.iterable import SafestructuresDataclass
 
@@ -40,6 +41,8 @@ class Serializer:
                 register_processor(self.process_map, p)
 
         self.mode: Optional[Mode] = None
+        self.current_node = None
+        self.graph_serializer = GraphSerializer(self)
 
     @staticmethod
     def _get_data_type(type_str: str) -> Type:
